@@ -9,7 +9,7 @@ from sklearn.metrics import confusion_matrix
 
 import matplotlib.pyplot as plt
 
-credit_data_df = pd.read_csv("/Users/h/PycharmProjects/transactionClassification/data/creditcard.csv")
+credit_data_df = pd.read_csv("data/creditcard.csv")
 
 # create a dataframe of zeros   | example rslt_df = dataframe[dataframe['Percentage'] > 80]
 credit_data_df_legit = credit_data_df[credit_data_df['Class'] == 0]

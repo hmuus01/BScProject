@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dropdown</title>
+</head>
+<body>
+<form action="/option" method="POST">
+  <select name="cars">
+    {% for idx in indexes %}
+   <option value= "{{idx}}">{{ colours[idx] }}</option>"
+    {% endfor %}
+  </select>
+  <input type="submit" value="Submit">
+</form>
+</body>
+</html>

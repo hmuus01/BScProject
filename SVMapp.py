@@ -1,5 +1,6 @@
+#SUPPORT VECTOR MACHINE
 import math
-from os import path
+
 import pandas as pd
 import numpy as np
 from sklearn import metrics
@@ -9,17 +10,15 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.feature_selection import SelectKBest, f_regression
-import pickle
+from sklearn import svm
 
 import matplotlib.pyplot as plt
 
-#
+
 proba_threshold = 0.2
 
-#Array to store the accuracies and the recalls
 accuracies= []
 recalls = []
-#load the credit card csv file
 credit_data_df = pd.read_csv("data/creditcard.csv")
 
 # create a dataframe of zeros   | example rslt_df = dataframe[dataframe['Percentage'] > 80]
@@ -30,12 +29,12 @@ credit_data_df_fraud = credit_data_df[credit_data_df['Class'] == 1]
 
 # count ones |
 numberOfOnes = credit_data_df_fraud.shape[0]
-load_balancing_ratio = 1.0
+load_balancing_ratio = 2.0
 numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
 
-random_seeds = [12] #, 23, 34, 1, 56, 67, 45, 6]
+random_seeds = [12, 23, 34, 1, 56, 67, 45, 6]
 
-#Method to plot the ROC curve
+
 def plot_roc():
     plt.title('Receiver Operating Characteristic')
     plt.plot(fpr, tpr, 'b', label='AUC = %0.2f' % roc_auc)
@@ -47,7 +46,7 @@ def plot_roc():
     plt.xlabel('False Positive Rate')
     plt.show()
 
-#
+
 for rs in random_seeds:
 
     # choose a random sample of zeros
@@ -71,11 +70,8 @@ for rs in random_seeds:
 
 
     # use sklearns random forrest to fit a model to train data
-    clf = RandomForestClassifier(n_estimators=100, random_state=rs)
+    clf = svm.SVC(gamma='scale', probability=True, kernel='linear')
     clf.fit(X_train, y_train)
-
-    #use the model
-    pickle.dump(clf, open(path.join('models', 'rf.pkl'), 'wb'))
     #y_pred = clf.predict(X_test)
     probs = clf.predict_proba(X_test)
     preds = probs[:, 1]
@@ -109,8 +105,8 @@ for rs in random_seeds:
     observations_df['prediction'] = y_pred
     observations_df['proba'] = preds
     # method I: plt
-    plot_roc()
-############################## Logistic REGRESSION (LN)
+    #plot_roc()
+
 #Threshold
 #ROC prob
 # use select k_best from sklearn to choose best features

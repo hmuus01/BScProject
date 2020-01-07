@@ -26,17 +26,21 @@ df = pd.read_csv(path)
 #        s.close()
 #        print('done')
 
-#def get_row():
-    #for row in df.itertuples():
-    #row = df.loc[0:]
-    #print(row)
-    #return row
+def get_row():
+    # for row in df.itertuples():
+    # row = df.loc[0:]
+    # print(row)
+    num_transactions = df.shape[0]
 
-# while True:
-#     s.send(get_row())
-#     break
-# print("Done Sending")
-# s.close()
+    #transactions = ['transaction ' + str(i) for i in range(num_transactions)]
+    indexes = [i for i in range(num_transactions)]
+    return indexes
+
+while True:
+    s.send(str(get_row()))
+    break
+print("Done Sending")
+s.close()
 
 
 

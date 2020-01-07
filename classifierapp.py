@@ -49,7 +49,6 @@ def plot_roc():
 
 #
 for rs in random_seeds:
-
     # choose a random sample of zeros
     credit_data_df_legit_random = credit_data_df_legit.sample(numberOfZeros, random_state=rs)
 
@@ -70,13 +69,14 @@ for rs in random_seeds:
     X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.2, random_state=rs, stratify=y)
 
 
-    # use sklearns random forrest to fit a model to train data
+    # use sklearns random forest to fit a model to train data
     clf = RandomForestClassifier(n_estimators=100, random_state=rs)
     clf.fit(X_train, y_train)
 
     #use the model
     pickle.dump(clf, open(path.join('models', 'rf.pkl'), 'wb'))
     #y_pred = clf.predict(X_test)
+    # for this classification use Predict_proba to give the only probability of 1
     probs = clf.predict_proba(X_test)
     preds = probs[:, 1]
 
@@ -86,7 +86,6 @@ for rs in random_seeds:
     acc = accuracy_score(y_test, y_pred)
     accuracies.append(acc)
     # output score
-
     print(acc)
 
     # precision / recall
@@ -110,11 +109,12 @@ for rs in random_seeds:
     observations_df['proba'] = preds
     # method I: plt
     plot_roc()
-############################## Logistic REGRESSION (LN)
 #Threshold
 #ROC prob
-# use select k_best from sklearn to choose best features
+# select k_best from sklearn for best features
+#calculate the mean accuracy
 mean_accuracy = np.mean(np.array(accuracies))
+#Calculate the mean recall
 mean_recall = np.mean(np.array(recalls))
 print('accuracy mean = ' + str(mean_accuracy))
 print('recall mean = ' + str(mean_recall))

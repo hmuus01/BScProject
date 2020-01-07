@@ -31,26 +31,6 @@ app = Flask(__name__)
 def hello():
     return "Hello World!"
 
-# @app.route('/', defaults={'req_path': ''})
-# @app.route('/<path:req_path>')
-# def dir_listing(req_path):
-#     BASE_DIR = '/'
-#
-#     # Joining the base and the requested path
-#     abs_path = os.path.join(BASE_DIR, req_path)
-#
-#     # Return 404 if path doesn't exist
-#     if not os.path.exists(abs_path):
-#         return abort(404)
-#
-#     # Check if path is a file and serve
-#     if os.path.isfile(abs_path):
-#         return send_file(abs_path)
-#
-#     # Show directory contents
-#     files = os.listdir(abs_path)
-#     return render_template('files.html', files=files)
-#
 @app.route('/option', methods=["GET", "POST"])
 def option():
 
@@ -67,7 +47,6 @@ def option():
         transactions = ['transaction ' + str(i) for i in range(num_transactions)]
         indexes = [i for i in range(num_transactions)]
 
-        #
 
     return render_template("dropdown.html", colours=transactions, indexes=indexes)
 
@@ -90,7 +69,7 @@ def upload():
 
             return redirect(request.url)
 
-    return render_template("upload_image.html")
+    return render_template("upload_file.html")
 
 
 @app.route('/drop', methods=['GET', 'POST'])
@@ -105,8 +84,6 @@ def drop():
     indexes = [i for i in range(num_transactions)]
     # server uses model to predict the legitimacy of the data
 
-    #rows = data_df.loc[0:]
-
     #send_row(rows)
 
     return render_template('dropdown.html', colours=transactions, indexes=indexes)
@@ -114,7 +91,7 @@ def drop():
 
 
 @app.route("/", methods=["GET", "POST"])
-def upload_image():
+def upload_file():
 
     if request.method == "POST":
 
@@ -127,7 +104,7 @@ def upload_image():
             return redirect(request.url)
 
 
-    return render_template("upload_image.html")
+    return render_template("upload_file.html")
 
 
 if __name__ == '__main__':

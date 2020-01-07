@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import os
 import socket
+from io import StringIO
+
 
 import pandas as pd
 import pickle
@@ -32,16 +34,22 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             #path = os.path.join('data', 'credit.csv')
 
             #data_df = pd.read_csv(path)
+
+            s = str(data, 'utf-8')
+
+            d = StringIO(s)
+
+            df = pd.read_csv(d)
             # server loads model
 
             model = pickle.load(open('models/rf.pkl', 'rb'))
             # server uses model to predict the legitimacy of the data
-            result = model.predict(data)
+            result = model.predict(df)
             response = 'server says: Hi'
             if not data:
              break
             #conn.sendall(response)
-            print(repr(data))
+            print(response)
         print("Done Receiving")
         conn.close()
         # Open one recv.txt file in write mode

@@ -13,7 +13,7 @@ import pickle
 
 import matplotlib.pyplot as plt
 
-
+#Lower the threshold from 0.5 to 0.2 in order to retrieve positive results that would otherwise be negative when the model lacks confidence i.e probabilty 0.45
 proba_threshold = 0.2
 
 #Array to store the accuracies and the recalls
@@ -33,7 +33,7 @@ numberOfOnes = credit_data_df_fraud.shape[0]
 load_balancing_ratio = 1.0
 numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
 
-random_seeds = [12, 23, 34, 1, 56, 67, 45, 6]
+random_seeds = [12] #, 23, 34, 1, 56, 67, 45, 6]
 
 #Method to plot the ROC curve
 def plot_roc():
@@ -62,7 +62,7 @@ for rs in random_seeds:
 
     # create array y, which includes the classification only
     y = result['Class']
-
+    #Select the 20 best features
     X_new = SelectKBest(f_regression, k=20).fit_transform(X, y)
 
     # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split

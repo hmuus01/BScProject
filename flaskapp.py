@@ -51,12 +51,7 @@ def option():
     return render_template("dropdown.html", colours=transactions, indexes=indexes)
 
 
-#obtain row number
-#send row contents over to server
-#server reads row
-#server loads model
-#server uses model to predict the legitimacy of the transaction
-#server returns a response for 0 being legit and 1 being fraudulent
+
 
 @app.route('/upload', methods=["GET", "POST"])
 def upload():

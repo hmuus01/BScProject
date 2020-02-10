@@ -13,14 +13,17 @@ import pickle
 
 import matplotlib.pyplot as plt
 
+line_number=1
+
 #Lower the threshold from 0.5 to 0.2 in order to retrieve positive results that would otherwise be negative when the model lacks confidence i.e probabilty 0.45
-proba_threshold = 0.2
+proba_threshold = 0.5
 
 #Array to store the accuracies and the recalls
 accuracies= []
 recalls = []
 #load the credit card csv file
 credit_data_df = pd.read_csv("data/creditcard.csv")
+test_data_df = pd.read_csv("data/credit.csv")
 
 # create a dataframe of zeros   | example rslt_df = dataframe[dataframe['Percentage'] > 80]
 credit_data_df_legit = credit_data_df[credit_data_df['Class'] == 0]
@@ -58,12 +61,14 @@ for rs in random_seeds:
     # **load-balancing**
 
     # create dataframe X, which includes variables time, amount, V1, V2, V3, V4 (dtataframe subsetin)
-    X = result[['Time', 'Amount', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28']]
+    X = result[['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']]
 
     # create array y, which includes the classification only
     y = result['Class']
     #Select the 20 best features
-    X_new = SelectKBest(f_regression, k=20).fit_transform(X, y)
+    select_kbest = SelectKBest(f_regression, k=20)
+    X_new =select_kbest.fit_transform(X, y)
+    mask = select_kbest.get_support()
 
     # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
     X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.2, random_state=rs, stratify=y)
@@ -72,9 +77,9 @@ for rs in random_seeds:
     # use sklearns random forest to fit a model to train data
     clf = RandomForestClassifier(n_estimators=100, random_state=rs)
     clf.fit(X_train, y_train)
-
+    ml_object = [clf, mask]
     #use the model
-    pickle.dump(clf, open(path.join('models', 'rf.pkl'), 'wb'))
+    pickle.dump(ml_object, open(path.join('models', 'rf.pkl'), 'wb'))
     #y_pred = clf.predict(X_test)
     # for this classification use Predict_proba to give the only probability of 1
     probs = clf.predict_proba(X_test)
@@ -88,6 +93,18 @@ for rs in random_seeds:
     # output score
     print(acc)
 
+
+    line_df = test_data_df[line_number:line_number+1].values.tolist()[0][:-1]
+
+    features = [x for idx, x in enumerate(line_df) if mask[idx]]
+    X_test1 = np.array([np.array(features)])
+
+    probs1 = clf.predict_proba(X_test1)
+    preds1 = probs1[:, 1]
+    print('==================')
+    print(probs1)
+    print(preds1)
+    print('==================')
     # precision / recall
     # confusion matrix |
     # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html

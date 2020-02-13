@@ -77,9 +77,32 @@
 #!/usr/bin/env python3
 #https://realpython.com/python-sockets/
 import socket
+import pickle
+from os import path
+import numpy as np
 
-def infer(model, row):
-    response ='1'
+proba_threshold = 0.2
+file = open(path.join('models', 'rf.pkl'), 'rb')
+clf_obj = pickle.load(file)
+rf_model = clf_obj[0]
+mask = clf_obj[1]
+
+def infer(clf, mask,  row):
+    features_all = [float(x) for x in row.split()]
+    features = [x for idx, x in enumerate(features_all) if mask[idx]]
+    print(features)
+    print(mask)
+
+    X_test = np.array([np.array(features)])
+
+    probs = clf.predict_proba(X_test)
+    preds = probs[:, 1]
+    print(probs)
+    print(preds)
+
+    y_pred = [1 if x >= proba_threshold else 0 for x in preds]
+
+    response =str(y_pred[0])
     return response
 
 HOST = '127.0.0.1'  # Standard loopback interface address (localhost)
@@ -94,7 +117,11 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             print('Connected by', addr)
             while True:
                 data = conn.recv(1024)
-                response = infer(None, data.decode('utf-8'))
                 if not data:
                     break
+                print('-----------')
+                print(data.decode('utf-8'))
+                print('-----------')
+                response = infer(rf_model, mask, data.decode('utf-8'))
+                print(response)
                 conn.sendall(response.encode('utf-8'))

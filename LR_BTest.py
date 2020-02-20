@@ -1,7 +1,6 @@
 #SUPPORT VECTOR MACHINE
 import math
-import pickle
-from os import path
+import random
 
 import pandas as pd
 import numpy as np
@@ -33,16 +32,21 @@ credit_data_df_fraud = credit_data_df[credit_data_df['Class'] == 1]
 # count ones |
 numberOfOnes = credit_data_df_fraud.shape[0]
 load_balancing_ratio = 1.0
-all_recalls={'lbfgs':[], 'newton-cg':[]}
-all_accuracys={'lbfgs':[], 'newton-cg':[]}
-lb_range=range(1,2)
+#numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
+#num_randoms = 10
+#random_seeds = set(random.sample(range(1, 100), num_randoms)) #[12, 23, 34, 1, 56]#, 67, 45, 6]
+#print(random_seeds)
+
+all_accuracys = {'lbfgs': [], 'newton-cg': []}
+lb_range=range(1, 30)
 optimizers=['lbfgs', 'newton-cg']
 
 for load_balancing_ratio in lb_range:
     for optimizer in optimizers:
         numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
+        num_randoms = 10
 
-        random_seeds = [12, 23, 34, 1, 56, 67, 45, 6]
+        random_seeds = set(random.sample(range(1, 100), 10))
 
 
         def plot_roc():
@@ -58,39 +62,48 @@ for load_balancing_ratio in lb_range:
 
 
         for rs in random_seeds:
-
+            print(rs)
             # choose a random sample of zeros
             credit_data_df_legit_random = credit_data_df_legit.sample(numberOfZeros, random_state=rs)
+            credit_data_df_legit_random = credit_data_df_legit_random.sample(frac=1, random_state=rs).reset_index(
+                drop=True)
 
+            # shufle both dataframes
+            credit_data_df_fraud = credit_data_df_fraud.sample(frac=1, random_state=rs).reset_index(drop=True)
+
+            # generate test set with 50 legitimate and 50 fraudulent transactions:
+            df1 = credit_data_df_legit_random.iloc[:50, :]
+            df2 = credit_data_df_fraud.iloc[:50, :]
+            #
+            df3 = credit_data_df_legit_random.iloc[50:, :]
+            df4 = credit_data_df_fraud.iloc[50:, :]
+            # Test dataframe
+            test_df = df1.append(df2)
             # merge the above with the ones and do the rest of the pipeline with it
-            result = credit_data_df_legit_random.append(credit_data_df_fraud)
-
-            # **load-balancing**
+            result = df3.append(df4)
+            # Test features
+            X_test = test_df[
+                ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15',
+                 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']]
+            # Test class(labels)
+            y_test = test_df['Class']
 
             # create dataframe X, which includes variables time, amount, V1, V2, V3, V4 (dtataframe subsetin)
-            X = result[['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']]
+            X_train = result[
+                ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15',
+                 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']]
 
             # create array y, which includes the classification only
-            y = result['Class']
-
-            select_kbest = SelectKBest(f_regression, k=20)
-            X_new = select_kbest.fit_transform(X, y)
-            mask = select_kbest.get_support()
-
-            # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
-            X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.1, random_state=rs, stratify=y)
+            y_train = result['Class']
 
             # use sklearns random forrest to fit a model to train data
-            #clf = svm.SVC(gamma='scale', probability=True, kernel='linear') class_weight={1: 5}
+            # clf = svm.SVC(gamma='scale', probability=True, kernel='linear') class_weight={1: 5}
 
-            #clf = svm.SVC(C=1, kernel='linear', probability=True, random_state=0, class_weight={1: 2})
-            clf = LogisticRegression(random_state=0,solver=optimizer, class_weight={1: int(load_balancing_ratio)})
+            # clf = svm.SVC(C=1, kernel='linear', probability=True, random_state=0, class_weight={1: 2})
+            clf = LogisticRegression(random_state=0, solver=optimizer, class_weight={1: int(load_balancing_ratio)})
 
             clf.fit(X_train, y_train)
-            ml_object = [clf, mask]
-            # use the model
-            pickle.dump(ml_object, open(path.join('models', 'lr.pkl'), 'wb'))
-            #y_pred = clf.predict(X_test)
+            # y_pred = clf.predict(X_test)
             probs = clf.predict_proba(X_test)
             preds = probs[:, 1]
 
@@ -118,40 +131,41 @@ for load_balancing_ratio in lb_range:
             fpr, tpr, threshold = metrics.roc_curve(y_test, preds)
             roc_auc = metrics.auc(fpr, tpr)
 
-            observations_df = pd.DataFrame(columns = ['y_true', 'prediction', 'proba'])
+            observations_df = pd.DataFrame(columns=['y_true', 'prediction', 'proba'])
             observations_df['y_true'] = y_test
             observations_df['prediction'] = y_pred
             observations_df['proba'] = preds
             # method I: plt
-            #plot_roc()
+            # plot_roc()
 
-        #Threshold
-        #ROC prob
+        # Threshold
+        # ROC prob
         # use select k_best from sklearn to choose best features
         mean_accuracy = np.mean(np.array(accuracies))
         mean_recall = np.mean(np.array(recalls))
-        all_recalls[optimizer].append(mean_recall)
         all_accuracys[optimizer].append(mean_accuracy)
         print('accuracy mean = ' + str(mean_accuracy))
         print('recall mean = ' + str(mean_recall))
 
-        #Histogram & boxplot of accuracies and recalls
-
-        #Tod o: Visualize observations (zeros and ones)
-        ## Play with sample weight
-        ## try with different load balancing levels like 1:2 or 1:4 etc.
-        # plot probability distributions
-        # plot the hyperplanes
-
 
 import matplotlib.pyplot as plt
-plt.plot(lb_range, all_recalls['lbfgs'], label='lbfgs')
-plt.plot(lb_range, all_recalls['newton-cg'], label='newton-cg')
-#plt.plot(lb_range, all_accuracys['lbfgs'], label='lbfgs')
-#plt.plot(lb_range, all_accuracys['newton-cg'], label='newton-cg')
+#plt.plot(lb_range, all_recalls['lbfgs'], label='lbfgs')
+#plt.plot(lb_range, all_recalls['newton-cg'], label='newton-cg')
+plt.plot(lb_range, all_accuracys['lbfgs'], label='lbfgs')
+plt.plot(lb_range, all_accuracys['newton-cg'], label='newton-cg')
 #plt.ylabel('recalls')
 plt.legend()
-plt.ylabel('recalls %')
+plt.ylabel('accuracies %')
 plt.xlabel('LB ratio')
 plt.title('optimizer')
 plt.show()
+
+
+
+#Histogram & boxplot of accuracies and recalls
+
+#Tod o: Visualize observations (zeros and ones)
+## Play with sample weight
+## try with different load balancing levels like 1:2 or 1:4 etc.
+# plot probability distributions
+# plot the hyperplanes

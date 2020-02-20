@@ -81,14 +81,25 @@ import pickle
 from os import path
 import numpy as np
 
+models = ['rf', 'svm', 'lr']
 proba_threshold = 0.2
-file = open(path.join('models', 'rf.pkl'), 'rb')
-clf_obj = pickle.load(file)
-rf_model = clf_obj[0]
-mask = clf_obj[1]
 
-def infer(clf, mask,  row):
-    features_all = [float(x) for x in row.split()]
+def get_model(model_str):
+    file = open(path.join('models', model_str+'.pkl'), 'rb')
+    clf_obj = pickle.load(file)
+    rf_model = clf_obj[0]
+    mask = clf_obj[1]
+
+    return rf_model, mask
+
+
+def infer( row):
+    response_tokens = [x for x in row.split()]
+    model_str = response_tokens[0]
+
+    clf, mask = get_model(models[int(model_str)])
+
+    features_all = [float(x) for x in response_tokens[1:]]
     features = [x for idx, x in enumerate(features_all) if mask[idx]]
     print(features)
     print(mask)
@@ -122,6 +133,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 print('-----------')
                 print(data.decode('utf-8'))
                 print('-----------')
-                response = infer(rf_model, mask, data.decode('utf-8'))
+                response = infer(data.decode('utf-8'))
                 print(response)
                 conn.sendall(response.encode('utf-8'))

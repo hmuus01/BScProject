@@ -1,17 +1,38 @@
-<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Dropdown</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link charset="utf-8" href="/static/custom.css?q=1280549780" media="screen" rel="stylesheet"/>
+
 </head>
 <body>
+<div class="text-center">
 <form action="/option" method="POST">
-  <select name="cars">
+    <h3>Click the drop-down menu below to choose a transaction</h3>
+  <select name="transaction">
     {% for idx in indexes %}
-   <option value= "{{idx}}">{{ colours[idx] }}</option>"
+   <option value= "{{idx}}">{{ transactions[idx] }}</option>"
     {% endfor %}
   </select>
+
+    <h5>Click the drop-down menu below to choose a Model</h5>
+  <select name="model">
+    {% for idx in model_indexes %}
+   <option value= "{{idx}}">{{ models[idx] }}</option>"
+    {% endfor %}
+  </select>
+
+    <p value="{{response}}"> Model Predicted: {{response}}</p>
+    <p value="{{true_val}}"> True value is: {{true_val}}</p>
   <input type="submit" value="Submit">
 </form>
+</div>
+ <footer class="page-footer font small cyan darken-3">
+    <div class="footer-copyright text-center py-3">
+            © 2020 Copyright 2020 Model Prediction.
+    </div>
+    </footer>
 </body>
 </html>

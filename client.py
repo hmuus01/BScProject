@@ -70,12 +70,12 @@ import csv
 HOST = '127.0.0.1'  # The server's hostname or IP address
 PORT = 65432        # The port used by the server
 
-
+user_response = 5
 
 with open('data/credit.csv') as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')
-    rows = [x for x in csv_reader]
-row_str = ' '.join(rows[1])
+    transaction_rows = [x for x in csv_reader]
+row_str = ' '.join(transaction_rows[user_response][:-1])
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((HOST, PORT))
     s.sendall(row_str.encode("utf-8"))

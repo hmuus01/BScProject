@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+  <body>
+{% block content %}
+  <div class="Homeage">
+    <h1>Model Prediction</h1>
+    <p>This is the Homepage</p>
+      <p>Click below to go to the Model Selection and Prediction</p>
+      <strong><nav>
+      <ul class="link">
+            <li><a href="{{ url_for('drop', response='0_0') }}">Model Selection & Prediction</a></li>
+          </ul>
+        </nav></strong>
+  </div>
+{% endblock %}
+
+  </body>
+</html>

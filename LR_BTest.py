@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 
 proba_threshold = 0.5
 
+x_ticks=[]
 accuracies= []
 recalls = []
 credit_data_df = pd.read_csv("data/creditcard.csv")
@@ -148,6 +149,7 @@ for load_balancing_ratio in lb_range:
         print('recall mean = ' + str(mean_recall))
 
 
+
 import matplotlib.pyplot as plt
 #plt.plot(lb_range, all_recalls['lbfgs'], label='lbfgs')
 #plt.plot(lb_range, all_recalls['newton-cg'], label='newton-cg')
@@ -155,11 +157,10 @@ plt.plot(lb_range, all_accuracys['lbfgs'], label='lbfgs')
 plt.plot(lb_range, all_accuracys['newton-cg'], label='newton-cg')
 #plt.ylabel('recalls')
 plt.legend()
-plt.ylabel('accuracies %')
+plt.ylabel('Accuracies %')
 plt.xlabel('LB ratio')
-plt.title('optimizer')
+plt.title("Load Balancing Ratio's  ")
 plt.show()
-
 
 
 #Histogram & boxplot of accuracies and recalls
@@ -167,5 +168,6 @@ plt.show()
 #Tod o: Visualize observations (zeros and ones)
 ## Play with sample weight
 ## try with different load balancing levels like 1:2 or 1:4 etc.
-# plot probability distributions
-# plot the hyperplanes
+# Plot probability distributions
+# Plot the hyperplanes
+

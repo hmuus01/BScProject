@@ -101,7 +101,9 @@ def infer( row):
 
     features_all = [float(x) for x in response_tokens[1:]]
     features = [x for idx, x in enumerate(features_all) if mask[idx]]
+    print("Below is Features")
     print(features)
+    print("Below is Mask")
     print(mask)
 
     X_test = np.array([np.array(features)])

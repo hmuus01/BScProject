@@ -10,6 +10,12 @@ import csv
 
 app = Flask(__name__)
 
+path = os.path.join('data', 'credit.csv')
+print('reading csv')
+data_df = pd.read_csv(path)
+print('sampling')
+data_df = data_df.sample(frac=0.1)
+
 @app.route('/', methods=["GET", "POST"])
 def home():
 
@@ -45,7 +51,7 @@ def option():
         ##############################################
         print(data)
 
-    return redirect(url_for('drop', response=str(data)+'_' + str(transaction_rows[user_response][-1])))
+    return redirect(url_for('drop', response=str(data)+'_' + str(transaction_rows[user_response][-1])+'_' + str(transaction_rows[user_response][-2])))
 
 
 @app.route('/drop', methods=['GET', 'POST'])
@@ -53,19 +59,20 @@ def drop():
     path = os.path.join('data', 'credit.csv')
     response = request.args['response'].split('_')[0]
     true_val = request.args['response'].split('_')[1]
-    data_df = pd.read_csv(path)
+    price = request.args['response'].split('_')[2]
 
     num_transactions =data_df.shape[0]
+    print('length: ' + str(num_transactions))
 
     transactions = ['transaction ' + str(i)for i in range(1, num_transactions)]
-    indexes = [i for i in range(random.randrange(num_transactions))]
+    indexes = [i for i in range(num_transactions)]
     # server uses model to predict the legitimacy of the data
 
     models = ['rf', 'svm', 'lr']
     model_indexes = [i for i in range(len(models))]
 
     return render_template('dropdown.html', transactions=transactions, indexes=indexes, models=models,
-                           model_indexes=model_indexes, response=response, true_val=true_val)
+                           model_indexes=model_indexes, response=response, true_val=true_val, price=price)
 
 # @app.route('/model_drop', methods=['GET', 'POST'])
 # def model_dropdown():

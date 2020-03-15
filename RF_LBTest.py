@@ -23,8 +23,7 @@ k_recalls=[]
 proba_threshold = 0.5
 
 x_ticks=[]
-accuracies= []
-recalls = []
+
 credit_data_df = pd.read_csv("data/creditcard.csv")
 
 # create a dataframe of zeros   | example rslt_df = dataframe[dataframe['Percentage'] > 80]
@@ -44,8 +43,11 @@ random_seeds = set(random.sample(range(1, 100), 10)) #[12, 23, 34, 1, 56]#, 67, 
 #all_accuracys = {'lbfgs': [], 'newton-cg': []}
 lb_range=range(1, 30)
 feature_headers = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']
-
+#feats=['Time', 'V1', 'V2', 'V3', 'V4']
+#mask = [True, False, True, True, True]
 for load_balancing_ratio in lb_range:
+    accuracies = []
+    recalls = []
     for rs in random_seeds:
         # choose a random sample of zeros
         credit_data_df_legit_random = credit_data_df_legit.sample(numberOfZeros, random_state=rs)
@@ -135,10 +137,12 @@ import matplotlib.pyplot as plt
 #plt.plot(lb_range, all_recalls['newton-cg'], label='newton-cg')
 #plt.plot(lb_range, all_accuracys['lbfgs'], label='lbfgs')
 plt.plot(lb_range, k_recalls)
+#plt.plot(lb_range, k_accuracies)
 
 #plt.ylabel('recalls')
 plt.legend()
 plt.ylabel('Recalls %')
+#plt.ylabel('Accuracies %')
 plt.xlabel('LB ratio')
 plt.title("Load Balancing Ratio's  ")
 plt.show()

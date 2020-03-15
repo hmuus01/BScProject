@@ -23,8 +23,7 @@ line_number=1
 proba_threshold = 0.5
 
 #Array to store the accuracies and the recalls
-accuracies= []
-recalls = []
+
 #load the credit card csv file
 credit_data_df = pd.read_csv("data/creditcard.csv")
 test_data_df = pd.read_csv("data/credit.csv")
@@ -57,6 +56,8 @@ def plot_roc():
 
 feature_headers = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']
 for k in range(60, 200, 20):
+    accuracies = []
+    recalls = []
     for rs in random_seeds:
         # choose a random sample of zeros
         credit_data_df_legit_random = credit_data_df_legit.sample(numberOfZeros, random_state=rs)

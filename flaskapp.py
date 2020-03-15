@@ -61,7 +61,7 @@ def drop():
     true_val = request.args['response'].split('_')[1]
     price = request.args['response'].split('_')[2]
 
-    num_transactions =data_df.shape[0]
+    num_transactions = data_df.shape[0]
     print('length: ' + str(num_transactions))
 
     transactions = ['transaction ' + str(i)for i in range(1, num_transactions)]

@@ -93,7 +93,7 @@ def get_model(model_str):
     return rf_model, mask
 
 
-def infer( row):
+def infer(row):
     response_tokens = [x for x in row.split()]
     model_str = response_tokens[0]
 

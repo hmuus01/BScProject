@@ -45,94 +45,92 @@ credit_data_df_legit = credit_data_df[credit_data_df['Class'] == 0]
 credit_data_df_fraud = credit_data_df[credit_data_df['Class'] == 1]
 
 feature_headers = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']
-lb_range=range(1, 4)
 
-for load_balancing_ratio in lb_range:
-    # count ones |
-    numberOfOnes = credit_data_df_fraud.shape[0]
-    #load_balancing_ratio = 1.0
-    numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
-    random_seeds = [12, 23, 34] #, 1, 56]#, 67, 45, 6]
-    #print(random_seeds)
 
-    for rs in random_seeds:
-        print(rs)
-        # choose a random sample of zeros
-        credit_data_df_legit_random = credit_data_df_legit.sample(numberOfZeros, random_state=rs)
+load_balancing_ratio=2.0
+# count ones |
+numberOfOnes = credit_data_df_fraud.shape[0]
+#load_balancing_ratio = 1.0
+numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
+random_seeds = [12, 23, 34, 1, 56]#, 67, 45, 6]
+#print(random_seeds)
 
-        # merge the above with the ones and do the rest of the pipeline with it
-        result = credit_data_df_legit_random.append(credit_data_df_fraud)
+for rs in random_seeds:
+    print(rs)
+    # choose a random sample of zeros
+    credit_data_df_legit_random = credit_data_df_legit.sample(numberOfZeros, random_state=rs)
 
-        # **load-balancing**
+    # merge the above with the ones and do the rest of the pipeline with it
+    result = credit_data_df_legit_random.append(credit_data_df_fraud)
 
-        # create dataframe X, which includes variables time, amount, V1, V2, V3, V4 (dtataframe subsetin)
-        X = result[feature_headers]
+    # **load-balancing**
 
-        # create array y, which includes the classification only
-        y = result['Class']
+    # create dataframe X, which includes variables time, amount, V1, V2, V3, V4 (dtataframe subsetin)
+    X = result[feature_headers]
 
-        select_kbest = SelectKBest(f_regression, k=25)
-        X_new = select_kbest.fit_transform(X, y)
-        mask = select_kbest.get_support()
+    # create array y, which includes the classification only
+    y = result['Class']
 
-        # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
-        X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.1, random_state=rs, stratify=y) #,kernel='poly', degree=2,
+    select_kbest = SelectKBest(f_regression, k=25)
+    X_new = select_kbest.fit_transform(X, y)
+    mask = select_kbest.get_support()
 
-        # use sklearns random forrest to fit a model to train data
-        #clf = svm.SVC(gamma='scale', probability=True, kernel='linear') class_weight={1: 5} , class_weight={1: int(load_balancing_ratio)}
+    # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
+    X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.1, random_state=rs, stratify=y) #,kernel='poly', degree=2,
 
-        clf = svm.SVC(C=1, kernel='linear', probability=True, random_state=0, class_weight={1: int(load_balancing_ratio)})
-        clf.fit(X_train, y_train)
+    # use sklearns random forrest to fit a model to train data
+    #clf = svm.SVC(gamma='scale', probability=True, kernel='linear') class_weight={1: 5} , class_weight={1: int(load_balancing_ratio)}
 
-        ml_object = [clf, mask]
+    clf = svm.SVC(C=1, kernel='linear', probability=True, random_state=0, class_weight={1: int(load_balancing_ratio)})
+    clf.fit(X_train, y_train)
 
-        # use the model
-        #pickle.dump(ml_object, open(path.join('models', 'svm.pkl'), 'wb'))
+    ml_object = [clf, mask]
 
-        #y_pred = clf.predict(X_test)
-        probs = clf.predict_proba(X_test)
-        preds = probs[:, 1]
-        #if probability  is above the threshold classify as a 1
-        y_pred = [1 if x >= proba_threshold else 0 for x in preds]
+    # use the model
+    #pickle.dump(ml_object, open(path.join('models', 'svm.pkl'), 'wb'))
 
-        # use sklearn metrics to judge accuracy of model using test data
-        acc = accuracy_score(y_test, y_pred)
-        accuracies.append(acc)
-        # output score
-        print(acc)
+    #y_pred = clf.predict(X_test)
+    probs = clf.predict_proba(X_test)
+    preds = probs[:, 1]
+    #if probability  is above the threshold classify as a 1
+    y_pred = [1 if x >= proba_threshold else 0 for x in preds]
 
-        # precision / recall
-        # confusion matrix |
-        # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html
-        target_names = ['class 0', 'class 1']
-        print(confusion_matrix(y_test, y_pred))
-        tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
-        print((tn, fp, fn, tp))
+    # use sklearn metrics to judge accuracy of model using test data
+    acc = accuracy_score(y_test, y_pred)
+    accuracies.append(acc)
+    # output score
+    print(acc)
 
-        recall = tp / (tp + fn)
-        recalls.append(recall)
-        print(classification_report(y_test, y_pred, target_names=target_names))
+    # precision / recall
+    # confusion matrix |
+    # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html
+    target_names = ['class 0', 'class 1']
+    print(confusion_matrix(y_test, y_pred))
+    tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
+    print((tn, fp, fn, tp))
 
-        fpr, tpr, threshold = metrics.roc_curve(y_test, preds)
-        roc_auc = metrics.auc(fpr, tpr)
+    recall = tp / (tp + fn)
+    recalls.append(recall)
+    print(classification_report(y_test, y_pred, target_names=target_names))
 
-        observations_df = pd.DataFrame(columns = ['y_true', 'prediction', 'proba'])
-        observations_df['y_true'] = y_test
-        observations_df['prediction'] = y_pred
-        observations_df['proba'] = preds
-        # method I: plt
-        #plot_roc()
+    fpr, tpr, threshold = metrics.roc_curve(y_test, preds)
+    roc_auc = metrics.auc(fpr, tpr)
+
+    observations_df = pd.DataFrame(columns = ['y_true', 'prediction', 'proba'])
+    observations_df['y_true'] = y_test
+    observations_df['prediction'] = y_pred
+    observations_df['proba'] = preds
+    # method I: plt
+    #plot_roc()
 
     #Threshold
     #ROC prob
     # use select k_best from sklearn to choose best features
-    mean_accuracy = np.mean(np.array(accuracies))
-    mean_recall = np.mean(np.array(recalls))
-    print('accuracy mean = ' + str(mean_accuracy))
-    print('recall mean = ' + str(mean_recall))
+mean_accuracy = np.mean(np.array(accuracies))
+mean_recall = np.mean(np.array(recalls))
+print('accuracy mean = ' + str(mean_accuracy))
+print('recall mean = ' + str(mean_recall))
 
-    k_accuracies.append(mean_accuracy)
-    k_recalls.append(mean_recall)
 
 
     #Histogram & boxplot of accuracies and recalls
@@ -153,13 +151,13 @@ for load_balancing_ratio in lb_range:
 # plt.xticks(x_ticks)
 # plt.show()
 
-plt.plot(lb_range, k_accuracies)
-plt.ylabel('accuracies')
-plt.title('SVM')
-plt.xticks(lb_range)
-plt.show()
-
-plt.plot(lb_range, k_recalls)
-plt.ylabel('recalls')
-plt.xticks(lb_range)
-plt.show()
+# plt.plot(lb_range, k_accuracies)
+# plt.ylabel('accuracies')
+# plt.title('SVM')
+# plt.xticks(lb_range)
+# plt.show()
+#
+# plt.plot(lb_range, k_recalls)
+# plt.ylabel('recalls')
+# plt.xticks(lb_range)
+# plt.show()

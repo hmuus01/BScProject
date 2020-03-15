@@ -24,8 +24,7 @@ line_number=1
 
 proba_threshold = 0.5
 
-accuracies= []
-recalls = []
+
 credit_data_df = pd.read_csv("data/creditcard.csv")
 
 # create a dataframe of zeros   | example rslt_df = dataframe[dataframe['Percentage'] > 80]
@@ -41,10 +40,12 @@ numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
 
 random_seeds = [12, 23, 34, 1, 56, 67, 45, 6]
 # all_recalls={'lbfgs':[], 'newton-cg':[]}
-all_accuracys={'lbfgs':[], 'newton-cg':[], 'sag':[]}
-all_recalls = {'lbfgs':[], 'newton-cg':[], 'sag':[]}
+all_accuracys={'lbfgs':[], 'newton-cg':[], 'sag':[], 'liblinear':[]}
+all_recalls = {'lbfgs':[], 'newton-cg':[], 'sag':[], 'liblinear':[]}
 lb_range=range(1,20)
-optimizers=['lbfgs', 'newton-cg', 'sag']
+optimizers=['lbfgs', 'newton-cg','liblinear']
+
+#lbfgs — Stands for Limited-memory Broyden–Fletcher–Goldfarb–Shanno.
 
 
 #Method to plot the ROC curve
@@ -63,6 +64,8 @@ def plot_roc():
 feature_headers = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']
 for optimizer in optimizers:
     for k in range(1, len(feature_headers)):
+        accuracies = []
+        recalls = []
         for rs in random_seeds:
 
             # choose a random sample of zeros
@@ -106,9 +109,7 @@ for optimizer in optimizers:
             acc = accuracy_score(y_test, y_pred)
             accuracies.append(acc)
             # output score
-
             print(acc)
-
 
             # precision / recall
             # confusion matrix |
@@ -143,8 +144,8 @@ for optimizer in optimizers:
         print('accuracy mean = ' + str(mean_accuracy))
         print('recall mean = ' + str(mean_recall))
 
-        k_accuracies.append(mean_accuracy)
-        k_recalls.append(mean_recall)
+        #k_accuracies.append(mean_accuracy)
+        #k_recalls.append(mean_recall)
         x_ticks.append(k)
 
         #Histogram & boxplot of accuracies and recalls
@@ -161,6 +162,7 @@ plt.title('Features Test on Recalls')
 plt.plot(range(len(all_recalls['lbfgs'])), all_recalls['lbfgs'], label='lbfgs')
 plt.plot(range(len(all_recalls['newton-cg'])), all_recalls['newton-cg'], label='newton-cg')
 plt.plot(range(len(all_recalls['sag'])), all_recalls['sag'], label='sag')
+plt.plot(range(len(all_recalls['liblinear'])), all_recalls['liblinear'], label='liblinear')
 plt.ylabel('Recalls')
 plt.xlabel('Features')
 plt.legend()
@@ -169,6 +171,7 @@ plt.title('Features Test on Accuracies')
 plt.plot(range(len(all_accuracys['lbfgs'])), all_accuracys['lbfgs'], label='lbfgs')
 plt.plot(range(len(all_accuracys['newton-cg'])), all_accuracys['newton-cg'], label='newton-cg')
 plt.plot(range(len(all_accuracys['sag'])), all_accuracys['sag'], label='sag')
+plt.plot(range(len(all_accuracys['liblinear'])), all_accuracys['liblinear'], label='liblinear')
 plt.ylabel('Accuracies')
 plt.xlabel('Features')
 plt.legend()

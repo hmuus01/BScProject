@@ -23,10 +23,19 @@
    <option value= "{{idx}}">{{ models[idx] }}</option>"
     {% endfor %}
   </select>
+    {% if response =="0" %}
+    <p value="{{response}}"> Model Predicted: False </p>
+    {% else %}
+    <p value="{{response}}"> Model Predicted: True </p>
+    {% endif %}
+     {% if true_val =="0" %}
+    <p value="{{true_val}}"> True value is: False</p>
+     {% else %}
+    <p value="{{true_val}}"> True value is: True</p>
+    {% endif %}
+    <p value="{{price}}"> Amount is {{price}}</p>
 
-    <p value="{{response}}"> Model Predicted: {{response}}</p>
-    <p value="{{true_val}}"> True value is: {{true_val}}</p>
-    <p value="{{price}}"> Amount is: {{price}}</p>
+    <p value="{{price}}"> Amount is {{price}}</p>
   <input type="submit" value="Submit">
 </form>
 </div>

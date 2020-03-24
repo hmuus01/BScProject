@@ -35,12 +35,20 @@ def option():
         print("This is  selectvalue = "+selectValue)
         print("This is  selectmodel = " + selectModel)
         #######################################################
+        #get the index of the transaction row
         user_response = int(selectValue)
+        #path to datafile
         data_file = os.path.join('data', 'credit.csv')
+        #open the file
         with open(data_file) as csv_file:
+            #get all the csv rows and columns (matrix)
             csv_reader = csv.reader(csv_file, delimiter=',')
+            #read the transaction rows into a list
             transaction_rows = [x for x in csv_reader]
+         #concatenate features for row corresponding to user response)
         row_str = ' '.join(transaction_rows[user_response][:-1])
+        # <m> <f1> <f2> <f3> <...> <fn>
+        #concatenate the selected model to the corresponding
         send_str = ' '.join([selectModel, row_str])
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:

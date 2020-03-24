@@ -26,7 +26,7 @@ proba_threshold = 0.5
 
 #load the credit card csv file
 credit_data_df = pd.read_csv("data/creditcard.csv")
-test_data_df = pd.read_csv("data/credit.csv")
+
 
 # create a dataframe of zeros   | example rslt_df = dataframe[dataframe['Percentage'] > 80]
 credit_data_df_legit = credit_data_df[credit_data_df['Class'] == 0]
@@ -100,17 +100,6 @@ for k in range(60, 200, 20):
         # output score
         print(acc)
 
-        line_df = test_data_df[line_number:line_number+1].values.tolist()[0][:-1]
-
-        features = [x for idx, x in enumerate(line_df) if mask[idx]]
-        X_test1 = np.array([np.array(features)])
-
-        probs1 = clf.predict_proba(X_test1)
-        preds1 = probs1[:, 1]
-        print('==================')
-        print(probs1)
-        print(preds1)
-        print('==================')
         # precision / recall
         # confusion matrix |
         # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html
@@ -132,14 +121,11 @@ for k in range(60, 200, 20):
         observations_df['proba'] = preds
         # method I: plt
         # plot_roc()
-    #Threshold
-    #ROC prob
-    # select k_best from sklearn for best features
+
     #calculate the mean accuracy
     mean_accuracy = np.mean(np.array(accuracies))
     #Calculate the mean recall
     mean_recall = np.mean(np.array(recalls))
-    print('k= ' + str(k))
     print('accuracy mean = ' + str(mean_accuracy))
     print('recall mean = ' + str(mean_recall))
 
@@ -150,7 +136,7 @@ for k in range(60, 200, 20):
 
 plt.plot(x_ticks, k_accuracies)
 plt.ylabel('Accuracies')
-plt.title('Decision Trees Test')
+plt.title('Decision Trees Test - Accuracies')
 plt.xticks(x_ticks)
 plt.xlabel('No. of Decision Trees')
 plt.show()
@@ -158,7 +144,7 @@ plt.show()
 plt.plot(x_ticks, k_recalls)
 plt.ylabel('Recalls')
 plt.xticks(x_ticks)
-plt.title('Decision Trees Test')
+plt.title('Decision Trees Test - Recalls')
 plt.xlabel('No. of Decision Trees')
 plt.show()
 

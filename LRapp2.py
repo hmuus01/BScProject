@@ -24,9 +24,11 @@ line_number=1
 
 proba_threshold = 0.5
 
-
+#Step 1 Load the credit card csv file
 credit_data_df = pd.read_csv("data/creditcard.csv")
 
+
+#Step 2
 # create a dataframe of zeros   | example rslt_df = dataframe[dataframe['Percentage'] > 80]
 credit_data_df_legit = credit_data_df[credit_data_df['Class'] == 0]
 
@@ -64,6 +66,7 @@ def plot_roc():
 feature_headers = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']
 for optimizer in optimizers:
     for k in range(1, len(feature_headers)):
+        # Array to store the accuracies and the recalls
         accuracies = []
         recalls = []
         for rs in random_seeds:
@@ -93,8 +96,8 @@ for optimizer in optimizers:
             #clf = svm.SVC(gamma='scale', probability=True, kernel='linear') class_weight={1: 5}
 
             #clf = svm.SVC(C=1, kernel='linear', probability=True, random_state=0, class_weight={1: 2})
-            clf = LogisticRegression(random_state=0,solver=optimizer, class_weight={1: int(load_balancing_ratio)})
-
+            clf = LogisticRegression(random_state=0, solver=optimizer, class_weight={1: int(load_balancing_ratio)})
+            #Overfitting - plot
             clf.fit(X_train, y_train)
             ml_object = [clf, mask]
             # use the model

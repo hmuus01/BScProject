@@ -82,7 +82,7 @@ from os import path
 import numpy as np
 
 models = ['rf', 'svm', 'lr']
-proba_threshold = 0.2
+proba_threshold = 0.5
 
 def get_model(model_str):
     file = open(path.join('models', model_str+'.pkl'), 'rb')
@@ -94,9 +94,15 @@ def get_model(model_str):
 
 
 def infer(row):
+    #response_tokens=[]
+    #for x in row.split():
+    #    response_tokens.append(x)
+
+    # row = 'x1 x2 x3'
+    # row.split['x1', 'x2', 'x3']
     response_tokens = [x for x in row.split()]
     model_str = response_tokens[0]
-
+    #Load the model
     clf, mask = get_model(models[int(model_str)])
 
     features_all = [float(x) for x in response_tokens[1:]]
@@ -106,13 +112,16 @@ def infer(row):
     print("Below is Mask")
     print(mask)
 
+    # acquire the features in a numpy array data structure
     X_test = np.array([np.array(features)])
 
+    # we pass the features array to the model to predict the probability of the label
     probs = clf.predict_proba(X_test)
+    # preds stores just the probability of the fraudulent label
     preds = probs[:, 1]
     print(probs)
     print(preds)
-
+    #stores 1 if it greater than the threshold or 0 if not
     y_pred = [1 if x >= proba_threshold else 0 for x in preds]
 
     response =str(y_pred[0])

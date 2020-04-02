@@ -18,6 +18,12 @@ from sklearn import svm
 
 import matplotlib.pyplot as plt
 
+
+x_ticks=[]
+k_accuracies=[]
+k_recalls=[]
+
+
 proba_threshold = 0.5
 
 accuracies= []
@@ -26,80 +32,53 @@ credit_data_df = pd.read_csv("data/creditcard.csv")
 
 # create a dataframe of zeros   | example rslt_df = dataframe[dataframe['Percentage'] > 80]
 credit_data_df_legit = credit_data_df[credit_data_df['Class'] == 0]
-
 # create a dataframe of 1s only |
 credit_data_df_fraud = credit_data_df[credit_data_df['Class'] == 1]
 
-# count ones |
+feature_headers = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']
+
+
+# load_balancing_ratio=2.0
+# # count ones |
+# numberOfOnes = credit_data_df_fraud.shape[0]
+load_balancing_ratio = 3.0
+# numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
+random_seeds = [12]#, 23, 34]#, 1, 56]#, 67, 45, 6]
+
+accuracies = []
+recalls = []
 numberOfOnes = credit_data_df_fraud.shape[0]
-load_balancing_ratio = 2.0
+# **load-balancing**
 numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
-num_randoms = 5
-random_seeds = set(random.sample(range(1, 100), 2)) #[12, 23, 34, 1, 56]#, 67, 45, 6]
-#print(random_seeds)
-
-def plot_roc():
-    plt.title('Receiver Operating Characteristic')
-    plt.plot(fpr, tpr, 'b', label='AUC = %0.2f' % roc_auc)
-    plt.legend(loc='lower right')
-    plt.plot([0, 1], [0, 1], 'r--')
-    plt.xlim([0, 1])
-    plt.ylim([0, 1])
-    plt.ylabel('True Positive Rate')
-    plt.xlabel('False Positive Rate')
-    plt.show()
-
-
 for rs in random_seeds:
     print(rs)
     # choose a random sample of zeros
     credit_data_df_legit_random = credit_data_df_legit.sample(numberOfZeros, random_state=rs)
-    credit_data_df_legit_random = credit_data_df_legit_random.sample(frac=1, random_state=rs).reset_index(drop=True)
 
-    # shufle both dataframes
-    credit_data_df_fraud = credit_data_df_fraud.sample(frac=1, random_state=rs).reset_index(drop=True)
-
-    #generate test set with 50 legitimate and 50 fraudulent transactions:
-    df1 = credit_data_df_legit_random.iloc[:50, :]
-    df2 = credit_data_df_fraud.iloc[:50, :]
-    #
-    df3 = credit_data_df_legit_random.iloc[50:, :]
-    df4 = credit_data_df_fraud.iloc[50:, :]
-    #Test dataframe
-    test_df = df1.append(df2)
     # merge the above with the ones and do the rest of the pipeline with it
-    result = df3.append(df4)
-    #Test features
-    X_test = test_df[['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']]
+    result = credit_data_df_legit_random.append(credit_data_df_fraud)
 
-    #Test class(labels)
-    y_test = test_df['Class']
+    # **load-balancing**
 
     # create dataframe X, which includes variables time, amount, V1, V2, V3, V4 (dtataframe subsetin)
-    X_train = result[['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']]
+    X = result[feature_headers]
 
     # create array y, which includes the classification only
-    y_train = result['Class']
+    y = result['Class']
 
-    #select_kbest = SelectKBest(f_regression, k=20)
-    #X_new = select_kbest.fit_transform(X, y)
-    #mask = select_kbest.get_support()
+    select_kbest = SelectKBest(f_regression, k=29)
+    X_new = select_kbest.fit_transform(X, y)
+    mask = select_kbest.get_support()
 
     # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
-    #X_train, X_test1, y_train, y_test1 = train_test_split(X_new, y, test_size=0.99, random_state=rs, stratify=y) #,kernel='poly', degree=2,
+    X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.1, random_state=rs, stratify=y) #,kernel='poly', degree=2,
 
-    # use sklearns random forrest to fit a model to train data
-    #clf = svm.SVC(gamma='scale', probability=True, kernel='linear') class_weight={1: 5} , class_weight={1: int(load_balancing_ratio)}
-
-    clf = svm.SVC(C=1, kernel='linear', probability=True, random_state=0, class_weight={1: int(load_balancing_ratio)})
+    clf = svm.SVC(C=1, kernel='linear', probability=True, random_state=0, class_weight='balanced')
     clf.fit(X_train, y_train)
-
-    #clf.fit(X_train, y_train)
-   # ml_object = [clf, mask]
+    ml_object = [clf, mask]
 
     # use the model
-    #pickle.dump(ml_object, open(path.join('models', 'svm.pkl'), 'wb'))
-
+    pickle.dump(ml_object, open(path.join('models', 'svc.pkl'), 'wb'))
     #y_pred = clf.predict(X_test)
     probs = clf.predict_proba(X_test)
     preds = probs[:, 1]
@@ -134,13 +113,15 @@ for rs in random_seeds:
     # method I: plt
     #plot_roc()
 
-#Threshold
-#ROC prob
-# use select k_best from sklearn to choose best features
+    #Threshold
+    #ROC prob
 mean_accuracy = np.mean(np.array(accuracies))
 mean_recall = np.mean(np.array(recalls))
 print('accuracy mean = ' + str(mean_accuracy))
 print('recall mean = ' + str(mean_recall))
+# k_accuracies.append(mean_accuracy)
+# k_recalls.append(mean_recall)
+
 
 #Histogram & boxplot of accuracies and recalls
 
@@ -149,3 +130,40 @@ print('recall mean = ' + str(mean_recall))
 ## try with different load balancing levels like 1:2 or 1:4 etc.
 # plot probability distributions
 # plot the hyperplanes
+
+
+
+# plt.plot(lb_range, k_accuracies)
+# plt.ylabel('Accuracies')
+# plt.xlabel('Load-Balancing Ratio')
+# plt.title('Load-Balancing Test on Accuracies')
+# plt.xticks(lb_range)
+# plt.show()
+#
+# plt.plot(lb_range, k_recalls)
+# plt.ylabel('Recalls')
+# plt.title('Load-Balancing Test on Recalls')
+# plt.xticks(lb_range)
+# plt.xlabel('Load-Balancing Ratio')
+# plt.show()
+
+# plt.plot(k_accuracies)
+# plt.ylabel('accuracies')
+# plt.xticks(x_ticks)
+# plt.show()
+#
+# plt.plot(k_recalls)
+# plt.ylabel('recalls')
+# plt.xticks(x_ticks)
+# plt.show()
+
+# plt.plot(lb_range, k_accuracies)
+# plt.ylabel('accuracies')
+# plt.title('SVM')
+# plt.xticks(lb_range)
+# plt.show()
+#
+# plt.plot(lb_range, k_recalls)
+# plt.ylabel('recalls')
+# plt.xticks(lb_range)
+# plt.show()

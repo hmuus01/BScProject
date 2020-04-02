@@ -24,18 +24,18 @@
     {% endfor %}
   </select>
     {% if response =="0" %}
-    <p value="{{response}}"> Model Predicted: False </p>
+    <p value="{{response}}"> Model Predicted: Legit </p>
     {% else %}
-    <p value="{{response}}"> Model Predicted: True </p>
+    <p value="{{response}}"> Model Predicted: Fraud </p>
     {% endif %}
      {% if true_val =="0" %}
-    <p value="{{true_val}}"> True value is: False</p>
+    <p value="{{true_val}}"> True value is: Legit</p>
      {% else %}
-    <p value="{{true_val}}"> True value is: True</p>
+    <p value="{{true_val}}"> True value is: Fraud</p>
     {% endif %}
     <p value="{{price}}"> Amount is {{price}}</p>
 
-    <p value="{{price}}"> Amount is {{price}}</p>
+<!--    <p value="{{price}}"> Amount is {{price}}</p>-->
   <input type="submit" value="Submit">
 </form>
 </div>

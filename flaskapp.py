@@ -10,11 +10,13 @@ import csv
 
 app = Flask(__name__)
 
-path = os.path.join('data', 'credit.csv')
+#1 The client: reads in a test dataset
+path = os.path.join('data', 'cred.csv')
 print('reading csv')
 data_df = pd.read_csv(path)
 print('sampling')
 data_df = data_df.sample(frac=0.1)
+#TEST Data
 
 @app.route('/', methods=["GET", "POST"])
 def home():
@@ -25,9 +27,10 @@ def home():
 HOST = '127.0.0.1'  # The server's hostname or IP address
 PORT = 65432        # The port used by the server
 
+
 @app.route('/option', methods=["GET", "POST"])
 def option():
-
+    # 3 The user chooses transaction and model
     if request.method == "POST":
         print("Hello")
         selectValue = request.form.get('transaction')
@@ -38,7 +41,7 @@ def option():
         #get the index of the transaction row
         user_response = int(selectValue)
         #path to datafile
-        data_file = os.path.join('data', 'credit.csv')
+        data_file = os.path.join('data', 'cred.csv')
         #open the file
         with open(data_file) as csv_file:
             #get all the csv rows and columns (matrix)
@@ -50,21 +53,22 @@ def option():
         # <m> <f1> <f2> <f3> <...> <fn>
         #concatenate the selected model to the corresponding
         send_str = ' '.join([selectModel, row_str])
-
+        # 4 The client sends to the server, the transaction features and the model
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((HOST, PORT))
             s.sendall(send_str.encode("utf-8"))
+            #8 receive result
             data = s.recv(1024).decode('utf-8')
 
         ##############################################
         print(data)
-
+    # 8 The client displays the result back to the user
     return redirect(url_for('drop', response=str(data)+'_' + str(transaction_rows[user_response][-1])+'_' + str(transaction_rows[user_response][-2])))
 
 
 @app.route('/drop', methods=['GET', 'POST'])
 def drop():
-    path = os.path.join('data', 'credit.csv')
+    path = os.path.join('data', 'cred.csv')
     response = request.args['response'].split('_')[0]
     true_val = request.args['response'].split('_')[1]
     price = request.args['response'].split('_')[2]
@@ -76,9 +80,10 @@ def drop():
     indexes = [i for i in range(num_transactions)]
     # server uses model to predict the legitimacy of the data
 
-    models = ['rf', 'svm', 'lr']
+    models = ['rf', 'svc', 'lr']
     model_indexes = [i for i in range(len(models))]
 
+    # 2 The client displays the test dataset transactions to the user, along with a choice of three models
     return render_template('dropdown.html', transactions=transactions, indexes=indexes, models=models,
                            model_indexes=model_indexes, response=response, true_val=true_val, price=price)
 

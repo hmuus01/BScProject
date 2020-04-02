@@ -42,8 +42,8 @@ numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
 
 random_seeds = [12, 23, 34, 1, 56, 67, 45, 6]
 # all_recalls={'lbfgs':[], 'newton-cg':[]}
-all_accuracys={'lbfgs':[], 'newton-cg':[], 'sag':[], 'liblinear':[]}
-all_recalls = {'lbfgs':[], 'newton-cg':[], 'sag':[], 'liblinear':[]}
+all_accuracys={'lbfgs':[], 'newton-cg':[], 'liblinear':[]}
+all_recalls = {'lbfgs':[], 'newton-cg':[], 'liblinear':[]}
 lb_range=range(1,20)
 optimizers=['lbfgs', 'newton-cg','liblinear']
 
@@ -164,7 +164,8 @@ for optimizer in optimizers:
 plt.title('Features Test on Recalls')
 plt.plot(range(len(all_recalls['lbfgs'])), all_recalls['lbfgs'], label='lbfgs')
 plt.plot(range(len(all_recalls['newton-cg'])), all_recalls['newton-cg'], label='newton-cg')
-plt.plot(range(len(all_recalls['sag'])), all_recalls['sag'], label='sag')
+#plt.plot(range(len(all_recalls['sag'])), all_recalls['sag'], label='sag')
+#plt.plot(range(len(all_recalls['saga'])), all_recalls['saga'], label='saga')
 plt.plot(range(len(all_recalls['liblinear'])), all_recalls['liblinear'], label='liblinear')
 plt.ylabel('Recalls')
 plt.xlabel('Features')
@@ -173,7 +174,8 @@ plt.show()
 plt.title('Features Test on Accuracies')
 plt.plot(range(len(all_accuracys['lbfgs'])), all_accuracys['lbfgs'], label='lbfgs')
 plt.plot(range(len(all_accuracys['newton-cg'])), all_accuracys['newton-cg'], label='newton-cg')
-plt.plot(range(len(all_accuracys['sag'])), all_accuracys['sag'], label='sag')
+#plt.plot(range(len(all_accuracys['sag'])), all_accuracys['sag'], label='sag')
+#plt.plot(range(len(all_accuracys['saga'])), all_accuracys['saga'], label='saga')
 plt.plot(range(len(all_accuracys['liblinear'])), all_accuracys['liblinear'], label='liblinear')
 plt.ylabel('Accuracies')
 plt.xlabel('Features')

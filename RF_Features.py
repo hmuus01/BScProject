@@ -1,4 +1,5 @@
 import math
+import random
 from os import path
 import pandas as pd
 import numpy as np
@@ -77,7 +78,12 @@ def plot_roc():
     plt.show()
 
 feature_headers = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']
-for k in range(1,len(feature_headers)):
+#features = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']
+features = random.sample(feature_headers, len(feature_headers))
+print('Features are: '+ str(features))
+for k in range(1,len(features)+1):
+    print('k is: ' +str(k))
+   # print(features.__getitem__(k))
     # Array to store the accuracies and the recalls
     accuracies = []
     recalls = []
@@ -85,20 +91,15 @@ for k in range(1,len(feature_headers)):
         # choose a random sample of zeros
         credit_data_df_legit_random = credit_data_df_legit.sample(numberOfZeros, random_state=rs)
 
-
         # merge the above with the ones and do the rest of the pipeline with it
         result = credit_data_df_legit_random.append(credit_data_df_fraud)
 
-
         # **load-balancing**
-
         # create dataframe X, which includes variables time, amount, V1, V2, V3, V4 (dtataframe subsetin)
-        X = result[feature_headers]
-
+        X = result[features]
 
         # create array y, which includes the classification only
         y = result['Class']
-
 
         #Select the 20 best features
         select_kbest = SelectKBest(f_regression, k=k)
@@ -137,17 +138,6 @@ for k in range(1,len(feature_headers)):
         # output score
         print(acc)
 
-        line_df = test_data_df[line_number:line_number+1].values.tolist()[0][:-1]
-
-        features = [x for idx, x in enumerate(line_df) if mask[idx]]
-        X_test1 = np.array([np.array(features)])
-
-        probs1 = clf.predict_proba(X_test1)
-        preds1 = probs1[:, 1]
-        print('==================')
-        print(probs1)
-        print(preds1)
-        print('==================')
         # precision / recall
         # confusion matrix |
         # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html

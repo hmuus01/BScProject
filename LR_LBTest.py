@@ -14,6 +14,7 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.feature_selection import SelectKBest, f_regression
 from sklearn import svm
+from scipy import stats
 
 import matplotlib.pyplot as plt
 
@@ -22,7 +23,7 @@ k_accuracies=[]
 k_recalls=[]
 line_number=1
 
-proba_threshold = 0.5
+proba_threshold = 0.4
 
 #Step 1 Load the credit card csv file
 credit_data_df = pd.read_csv("data/creditcard.csv")
@@ -39,7 +40,7 @@ credit_data_df_fraud = credit_data_df[credit_data_df['Class'] == 1]
 # load_balancing_ratio = 1.0
 # numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
 
-random_seeds = [12, 23, 34]#, 1, 56, 67, 45, 6]
+random_seeds = [12, 23, 34, 1, 56, 67, 45, 6, 9, 10, 11, 12, 13,14,15, 16, 27, 18]
 # all_recalls={'lbfgs':[], 'newton-cg':[]}
 all_accuracys={'lbfgs':[], 'newton-cg':[], 'liblinear':[]}
 all_recalls = {'lbfgs':[], 'newton-cg':[], 'liblinear':[]}
@@ -80,14 +81,14 @@ for optimizer in optimizers:
             mask = select_kbest.get_support()
 
             # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
-            X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.2, random_state=rs, stratify=y)
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=rs, stratify=y)
 
             # use sklearns random forest to fit a model to train data
             # print('################################################################################################')
             # print('rs is ' + str(rs) + ' optimizer is ' + str(optimizer) + ' load balancing ratio is ' + str(load_balancing_ratio))
             # print('------------------------------------------------------------------------------------------------')
 
-            clf = LogisticRegression(random_state=0, solver=optimizer, class_weight='balanced')
+            clf = LogisticRegression(random_state=rs, solver=optimizer, class_weight='balanced')
             clf.fit(X_train, y_train)
             ml_object = [clf, mask]
             # use the model
@@ -110,13 +111,13 @@ for optimizer in optimizers:
             # confusion matrix |
             # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html
             target_names = ['class 0', 'class 1']
-           #print(confusion_matrix(y_test, y_pred))
+            print(confusion_matrix(y_test, y_pred))
             tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
-            #print((tn, fp, fn, tp))
+            print((tn, fp, fn, tp))
 
             recall = tp / (tp + fn)
             recalls.append(recall)
-            #print(classification_report(y_test, y_pred, target_names=target_names))
+            print(classification_report(y_test, y_pred, target_names=target_names))
 
             fpr, tpr, threshold = metrics.roc_curve(y_test, preds)
             roc_auc = metrics.auc(fpr, tpr)
@@ -127,18 +128,26 @@ for optimizer in optimizers:
             observations_df['proba'] = preds
 
         #Threshold
+
         #ROC prob
         # use select k_best from sklearn to choose best features
         mean_accuracy = np.mean(np.array(accuracies))
-        mean_recall = np.mean(np.array(recalls))
+        #Discards outliers
+        mean_recall = stats.trim_mean(np.array(recalls), 0.1)
+
+
         #print(mean_recall)
         all_recalls[optimizer].append(mean_recall)
-        print('optimizer is ' + ' -> ' + str(optimizer) + ' lb ratio is ' + ' -> ' + str(load_balancing_ratio) + ' All recalls  optimzer is '+ ' -> ' + str(all_recalls[optimizer]))
+        # print('optimizer is ' + ' -> ' + str(optimizer) + ' lb ratio is ' + ' -> ' + str(
+        #     load_balancing_ratio) + '  recalls  are ' + ' -> ' + str(recalls))
+        # print('optimizer is ' + ' -> ' + str(optimizer) + ' lb ratio is ' + ' -> ' + str(load_balancing_ratio) + ' All recalls  optimzer is '+ ' -> ' + str(all_recalls[optimizer]))
         all_accuracys[optimizer].append(mean_accuracy)
-        print('optimizer is ' + ' -> ' + str(optimizer) + ' lb ratio is ' + ' -> ' + str(load_balancing_ratio) + ' All acc optimzer is ' + ' -> ' + str(all_accuracys[optimizer]))
-        print('------------------------------------------------------------------------------------------------')
+        # print('optimizer is ' + ' -> ' + str(optimizer) + ' lb ratio is ' + ' -> ' + str(load_balancing_ratio) + ' All acc optimzer is ' + ' -> ' + str(all_accuracys[optimizer]))
         print('accuracy mean = ' + str(mean_accuracy))
         print('recall mean = ' + str(mean_recall))
+
+        print('------------------------------------------------------------------------------------------------')
+
 
 
         #k_accuracies.append(mean_accuracy)
@@ -147,21 +156,21 @@ for optimizer in optimizers:
 
 
 # # import matplotlib.pyplot as plt
-# plt.title('Load-Balancing Test on Recalls')
-# plt.plot(lb_range, all_recalls['lbfgs'], label='lbfgs')
-# plt.plot(lb_range, all_recalls['newton-cg'], label='newton-cg')
-# #plt.plot(range(len(all_recalls['sag'])), all_recalls['sag'], label='sag')
-# plt.plot(lb_range, all_recalls['liblinear'], label='liblinear')
-# plt.ylabel('Recalls')
-# plt.xlabel('Load-Balancing Ratio')
-# plt.legend()
-# plt.show()
-# plt.title('Load-Balancing on Accuracies')
-# plt.plot(lb_range, all_accuracys['lbfgs'], label='lbfgs')
-# plt.plot(lb_range, all_accuracys['newton-cg'], label='newton-cg')
-# #plt.plot(range(len(all_accuracys['sag'])), all_accuracys['sag'], label='sag')
-# plt.plot(lb_range, all_accuracys['liblinear'], label='liblinear')
-# plt.ylabel('Accuracies')
-# plt.xlabel('Load-Balancing Ratio')
-# plt.legend()
-# plt.show()
+plt.title('Load-Balancing Test on Recalls')
+plt.plot(lb_range, all_recalls['lbfgs'], label='lbfgs')
+plt.plot(lb_range, all_recalls['newton-cg'], label='newton-cg')
+#plt.plot(range(len(all_recalls['sag'])), all_recalls['sag'], label='sag')
+plt.plot(lb_range, all_recalls['liblinear'], label='liblinear')
+plt.ylabel('Recalls')
+plt.xlabel('Load-Balancing Ratio')
+plt.legend()
+plt.show()
+plt.title('Load-Balancing on Accuracies')
+plt.plot(lb_range, all_accuracys['lbfgs'], label='lbfgs')
+plt.plot(lb_range, all_accuracys['newton-cg'], label='newton-cg')
+#plt.plot(range(len(all_accuracys['sag'])), all_accuracys['sag'], label='sag')
+plt.plot(lb_range, all_accuracys['liblinear'], label='liblinear')
+plt.ylabel('Accuracies')
+plt.xlabel('Load-Balancing Ratio')
+plt.legend()
+plt.show()

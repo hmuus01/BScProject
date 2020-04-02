@@ -81,7 +81,7 @@ import pickle
 from os import path
 import numpy as np
 
-models = ['rf', 'svm', 'lr']
+models = ['rf', 'svc', 'lr']
 proba_threshold = 0.5
 
 def get_model(model_str):
@@ -92,12 +92,10 @@ def get_model(model_str):
 
     return rf_model, mask
 
-
 def infer(row):
     #response_tokens=[]
     #for x in row.split():
     #    response_tokens.append(x)
-
     # row = 'x1 x2 x3'
     # row.split['x1', 'x2', 'x3']
     response_tokens = [x for x in row.split()]
@@ -111,13 +109,12 @@ def infer(row):
     print(features)
     print("Below is Mask")
     print(mask)
-
     # acquire the features in a numpy array data structure
     X_test = np.array([np.array(features)])
 
     # we pass the features array to the model to predict the probability of the label
     probs = clf.predict_proba(X_test)
-    # preds stores just the probability of the fraudulent label
+    #preds stores just the probability of the fraudulent label
     preds = probs[:, 1]
     print(probs)
     print(preds)
@@ -138,12 +135,15 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         with conn:
             print('Connected by', addr)
             while True:
+                # 5 The server receives the transaction features and the model
                 data = conn.recv(1024)
                 if not data:
                     break
                 print('-----------')
                 print(data.decode('utf-8'))
                 print('-----------')
+                # 6 The server uses the chosen model to infer using the features as input
                 response = infer(data.decode('utf-8'))
                 print(response)
+                # 7 The server sends the result ( 0 or 1 ) back to the client
                 conn.sendall(response.encode('utf-8'))

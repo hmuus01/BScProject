@@ -43,9 +43,9 @@ feature_headers = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9',
 # numberOfOnes = credit_data_df_fraud.shape[0]
 # #load_balancing_ratio = 1.0
 # numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
-random_seeds = [12, 23, 34]#, 1, 56]#, 67, 45, 6]
+random_seeds = [12, 23]#, 34]#, 1, 56]#, 67, 45, 6]
 
-lb_range=range(1, 6)
+lb_range=range(1, 15)
 for load_balancing_ratio in lb_range:
     accuracies = []
     recalls = []
@@ -75,7 +75,7 @@ for load_balancing_ratio in lb_range:
         # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
         X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.1, random_state=rs, stratify=y) #,kernel='poly', degree=2,
 
-        clf = svm.SVC(C=1, kernel='linear', probability=True, random_state=0, class_weight='balanced')
+        clf = svm.SVC(C=1, kernel='linear', cache_size=7000, probability=True, random_state=rs, class_weight='balanced')
         clf.fit(X_train, y_train)
         ml_object = [clf, mask]
 
@@ -138,13 +138,13 @@ for load_balancing_ratio in lb_range:
 plt.plot(lb_range, k_accuracies)
 plt.ylabel('Accuracies')
 plt.xlabel('Load-Balancing Ratio')
-plt.title('Load-Balancing Test on Accuracies')
+plt.title('SVM Load-Balancing Test on Accuracies')
 plt.xticks(lb_range)
 plt.show()
 
 plt.plot(lb_range, k_recalls)
 plt.ylabel('Recalls')
-plt.title('Load-Balancing Test on Recalls')
+plt.title('SVM Load-Balancing Test on Recalls')
 plt.xticks(lb_range)
 plt.xlabel('Load-Balancing Ratio')
 plt.show()

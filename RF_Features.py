@@ -9,7 +9,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
-from sklearn.feature_selection import SelectKBest, f_regression
+from sklearn.feature_selection import SelectKBest, f_regression, mutual_info_classif, f_classif
 import pickle
 
 import matplotlib.pyplot as plt
@@ -18,20 +18,12 @@ x_ticks=[]
 k_accuracies=[]
 k_recalls=[]
 
-line_number=1
-
 #Lower the threshold from 0.5 to 0.2 in order to retrieve positive results that would otherwise be negative when the model lacks confidence i.e probabilty 0.45
 proba_threshold = 0.5
-
-# #Array to store the accuracies and the recalls
-# accuracies= []
-# recalls = []
 
 #load the credit card csv file
 credit_data_df = pd.read_csv("data/creditcard.csv")
 test_data_df = pd.read_csv("data/credit.csv")
-
-
 
 
 # create a dataframe of zeros   |
@@ -39,13 +31,6 @@ credit_data_df_legit = credit_data_df[credit_data_df['Class'] == 0]
 
 # create a dataframe of 1s only |
 credit_data_df_fraud = credit_data_df[credit_data_df['Class'] == 1]
-
-# print('This Legit')
-# print(credit_data_df_legit)
-# print('#####################')
-# print('This Fraud')
-# print(credit_data_df_fraud)
-# print('--------------------')
 
 
 # count ones |
@@ -78,10 +63,8 @@ def plot_roc():
     plt.show()
 
 feature_headers = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']
-#features = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']
-features = random.sample(feature_headers, len(feature_headers))
-print('Features are: '+ str(features))
-for k in range(1,len(features)+1):
+
+for k in range(1,len(feature_headers)):
     print('k is: ' +str(k))
    # print(features.__getitem__(k))
     # Array to store the accuracies and the recalls
@@ -93,18 +76,20 @@ for k in range(1,len(features)+1):
 
         # merge the above with the ones and do the rest of the pipeline with it
         result = credit_data_df_legit_random.append(credit_data_df_fraud)
-
+        result = result.sample(frac=1, random_state=rs)
         # **load-balancing**
         # create dataframe X, which includes variables time, amount, V1, V2, V3, V4 (dtataframe subsetin)
-        X = result[features]
+        X = result[feature_headers]
 
         # create array y, which includes the classification only
         y = result['Class']
 
         #Select the 20 best features
-        select_kbest = SelectKBest(f_regression, k=k)
+        select_kbest = SelectKBest(mutual_info_classif, k=k)
         X_new =select_kbest.fit_transform(X, y)
         mask = select_kbest.get_support()
+        #print(feature_headers[k])
+        print('mask is' + str(mask))
 
         # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
         X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.2, random_state=rs, stratify=y)

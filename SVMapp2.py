@@ -24,8 +24,8 @@ k_recalls=[]
 
 proba_threshold = 0.5
 
-accuracies= []
-recalls = []
+# accuracies= []
+# recalls = []
 credit_data_df = pd.read_csv("data/creditcard.csv")
 
 # create a dataframe of zeros   | example rslt_df = dataframe[dataframe['Percentage'] > 80]
@@ -35,9 +35,9 @@ credit_data_df_fraud = credit_data_df[credit_data_df['Class'] == 1]
 
 # count ones |
 numberOfOnes = credit_data_df_fraud.shape[0]
-load_balancing_ratio = 1.0
+load_balancing_ratio = 2.0
 numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
-random_seeds = [12, 23]#, 34, 1, 56]#, 67, 45, 6]
+random_seeds = [1]#, 23]#, 34, 1, 56]#, 67, 45, 6]
 #print(random_seeds)
 
 def plot_roc():
@@ -52,37 +52,11 @@ def plot_roc():
     plt.show()
 
 feature_headers = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']
-for k in range(1,len(feature_headers)):
+for k in range(5,len(feature_headers)):
+    accuracies = []
+    recalls = []
     for rs in random_seeds:
         print(rs)
-        # choose a random sample of zeros
-        # credit_data_df_legit_random = credit_data_df_legit.sample(numberOfZeros, random_state=rs)
-        # credit_data_df_legit_random = credit_data_df_legit_random.sample(frac=1, random_state=rs).reset_index(drop=True)
-        #
-        # # shufle both dataframes
-        # credit_data_df_fraud = credit_data_df_fraud.sample(frac=1, random_state=rs).reset_index(drop=True)
-        #
-        # #generate test set with 50 legitimate and 50 fraudulent transactions:
-        # df1 = credit_data_df_legit_random.iloc[:50, :]
-        # df2 = credit_data_df_fraud.iloc[:50, :]
-        # #
-        # df3 = credit_data_df_legit_random.iloc[50:, :]
-        # df4 = credit_data_df_fraud.iloc[50:, :]
-        # #Test dataframe
-        # test_df = df1.append(df2)
-        # # merge the above with the ones and do the rest of the pipeline with it
-        # result = df3.append(df4)
-        #Test features
-        # X_test = test_df[['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']]
-        #
-        # #Test class(labels)
-        # y_test = test_df['Class']
-        #
-        # # create dataframe X, which includes variables time, amount, V1, V2, V3, V4 (dtataframe subsetin)
-        # X_train = result[['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']]
-        #
-        # # create array y, which includes the classification only
-        # y_train = result['Class']
 
         # choose a random sample of zeros
         credit_data_df_legit_random = credit_data_df_legit.sample(numberOfZeros, random_state=rs)
@@ -103,7 +77,7 @@ for k in range(1,len(feature_headers)):
         mask = select_kbest.get_support()
 
         # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
-        X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.1, random_state=rs, stratify=y) #,kernel='poly', degree=2,
+        X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.2, random_state=rs, stratify=y) #,kernel='poly', degree=2,
 
         # use sklearns random forrest to fit a model to train data
         #clf = svm.SVC(gamma='scale', probability=True, kernel='linear') class_weight={1: 5} , class_weight={1: int(load_balancing_ratio)}
@@ -160,7 +134,9 @@ for k in range(1,len(feature_headers)):
     print('recall mean = ' + str(mean_recall))
 
     k_accuracies.append(mean_accuracy)
+    print('K_accuracies is: '+ str(k_accuracies))
     k_recalls.append(mean_recall)
+    print('K_recalls is: ' + str(k_recalls))
     x_ticks.append(k)
 
     #Histogram & boxplot of accuracies and recalls
@@ -171,37 +147,19 @@ for k in range(1,len(feature_headers)):
     # plot probability distributions
     # plot the hyperplanes
 
-# plt.plot(k_accuracies)
-# plt.ylabel('accuracies')
-# plt.xticks(x_ticks)
-# plt.show()
-#
-# plt.plot(k_recalls)
-# plt.ylabel('recalls')
-# plt.xticks(x_ticks)
-# plt.show()
-
-# plt.plot(x_ticks, k_accuracies)
-# plt.ylabel('accuracies')
-# plt.title('SVM')
-# plt.xticks(x_ticks)
-# plt.show()
-#
-# plt.plot(x_ticks, k_recalls)
-# plt.ylabel('recalls')
-# plt.xticks(x_ticks)
-# plt.show()
 
 plt.plot(x_ticks, k_accuracies)
 plt.ylabel('Accuracies')
 plt.xlabel('Features')
 plt.title('SVM Feature Test on Accuracies')
 plt.xticks(x_ticks)
+plt.savefig("svm_6.png", dpi=300, bbox_inches='tight')
 plt.show()
 
-plt.plot(x_ticks, k_recalls)
+#plt.plot(x_ticks, k_recalls)
 plt.ylabel('Recalls')
+plt.xlabel('Features')
 plt.title('SVM Feature Test on Recalls')
 plt.xticks(x_ticks)
-plt.xlabel('Features')
+plt.savefig("svm_7.png", dpi=300, bbox_inches='tight')
 plt.show()

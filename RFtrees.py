@@ -55,7 +55,7 @@ def plot_roc():
 
 
 feature_headers = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']
-for k in range(60, 200, 20):
+for k in range(5, 50, 5):
     accuracies = []
     recalls = []
     for rs in random_seeds:
@@ -82,7 +82,7 @@ for k in range(60, 200, 20):
         X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.2, random_state=rs, stratify=y)
 
         # use sklearns random forest to fit a model to train data
-        clf = RandomForestClassifier(n_estimators=k, random_state=rs,class_weight={1: int(load_balancing_ratio)})
+        clf = RandomForestClassifier(n_estimators=100, max_depth=k, random_state=rs,class_weight={1: int(load_balancing_ratio)})
         clf.fit(X_train, y_train)
         ml_object = [clf, mask]
         #use the model
@@ -136,15 +136,15 @@ for k in range(60, 200, 20):
 
 plt.plot(x_ticks, k_accuracies)
 plt.ylabel('Accuracies')
-plt.title('Decision Trees Test - Accuracies')
+plt.title('Max-Depth Trees Test - Accuracies')
 plt.xticks(x_ticks)
-plt.xlabel('No. of Decision Trees')
+plt.xlabel('Depth of the  Tree')
 plt.show()
 
 plt.plot(x_ticks, k_recalls)
 plt.ylabel('Recalls')
 plt.xticks(x_ticks)
-plt.title('Decision Trees Test - Recalls')
-plt.xlabel('No. of Decision Trees')
+plt.title('Max-Depth Trees Test - Recalls')
+plt.xlabel('Depth of the Tree')
 plt.show()
 

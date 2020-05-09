@@ -12,7 +12,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
-from sklearn.feature_selection import SelectKBest, f_regression
+from sklearn.feature_selection import SelectKBest, f_regression, mutual_info_classif, f_classif
 from sklearn import svm
 from scipy import stats
 
@@ -23,10 +23,10 @@ k_accuracies=[]
 k_recalls=[]
 line_number=1
 
-proba_threshold = 0.4
+proba_threshold = 0.5
 
 #Step 1 Load the credit card csv file
-credit_data_df = pd.read_csv("data/creditcard.csv")
+credit_data_df = pd.read_csv("../data/dev_data.csv")
 
 #Step 2
 # create a dataframe of zeros   | example rslt_df = dataframe[dataframe['Percentage'] > 80]
@@ -40,11 +40,11 @@ credit_data_df_fraud = credit_data_df[credit_data_df['Class'] == 1]
 # load_balancing_ratio = 1.0
 # numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
 
-random_seeds = [12, 23, 34, 1, 56, 67, 45, 6, 9, 10, 11, 12, 13,14,15, 16, 27, 18]
+random_seeds = [12, 23, 34, 1, 56, 67, 45, 6]#, 9, 10, 11, 12, 13,14,15, 16, 27, 18]
 # all_recalls={'lbfgs':[], 'newton-cg':[]}
 all_accuracys={'lbfgs':[], 'newton-cg':[], 'liblinear':[]}
 all_recalls = {'lbfgs':[], 'newton-cg':[], 'liblinear':[]}
-lb_range=range(1,20)
+lb_range=range(1,21)
 
 optimizers=['lbfgs','newton-cg','liblinear']
 
@@ -68,6 +68,7 @@ for optimizer in optimizers:
 
             # merge the above with the ones and do the rest of the pipeline with it
             result = credit_data_df_legit_random.append(credit_data_df_fraud)
+            #result = result.sample(frac=1, random_state=rs)
 
             # create array X, which includes variables time, amount, V1, V2, V3, V4 (dtataframe subsetin)
             X = result[feature_headers]
@@ -76,12 +77,12 @@ for optimizer in optimizers:
             y = result['Class']
 
             # Select the 20 best features
-            select_kbest = SelectKBest(f_regression, k=29)
+            select_kbest = SelectKBest(mutual_info_classif, k=29)
             X_new = select_kbest.fit_transform(X, y)
             mask = select_kbest.get_support()
 
             # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=rs, stratify=y)
+            X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.2, random_state=rs, stratify=y)
 
             # use sklearns random forest to fit a model to train data
             # print('################################################################################################')
@@ -133,7 +134,8 @@ for optimizer in optimizers:
         # use select k_best from sklearn to choose best features
         mean_accuracy = np.mean(np.array(accuracies))
         #Discards outliers
-        mean_recall = stats.trim_mean(np.array(recalls), 0.1)
+        #mean_recall = stats.trim_mean(np.array(recalls), 0.1)
+        mean_recall = np.mean(np.array(recalls))
 
 
         #print(mean_recall)
@@ -147,7 +149,6 @@ for optimizer in optimizers:
         print('recall mean = ' + str(mean_recall))
 
         print('------------------------------------------------------------------------------------------------')
-
 
 
         #k_accuracies.append(mean_accuracy)
@@ -164,7 +165,9 @@ plt.plot(lb_range, all_recalls['liblinear'], label='liblinear')
 plt.ylabel('Recalls')
 plt.xlabel('Load-Balancing Ratio')
 plt.legend()
+#plt.grid()
 plt.show()
+
 plt.title('Load-Balancing on Accuracies')
 plt.plot(lb_range, all_accuracys['lbfgs'], label='lbfgs')
 plt.plot(lb_range, all_accuracys['newton-cg'], label='newton-cg')
@@ -173,4 +176,5 @@ plt.plot(lb_range, all_accuracys['liblinear'], label='liblinear')
 plt.ylabel('Accuracies')
 plt.xlabel('Load-Balancing Ratio')
 plt.legend()
+#plt.grid()
 plt.show()

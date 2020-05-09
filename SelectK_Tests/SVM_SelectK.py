@@ -9,8 +9,9 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
-from sklearn.feature_selection import SelectKBest, f_regression, f_classif, f_oneway, f_regression ,mutual_info_classif ,mutual_info_regression
+from sklearn.feature_selection import SelectKBest,f_classif, f_regression ,mutual_info_classif ,mutual_info_regression
 import pickle
+from sklearn import svm
 
 import matplotlib.pyplot as plt
 
@@ -27,11 +28,8 @@ proba_threshold = 0.5
 # accuracies= []
 # recalls = []
 
-
-
 #load the credit card csv file
-credit_data_df = pd.read_csv("data/creditcard.csv")
-test_data_df = pd.read_csv("data/credit.csv")
+credit_data_df = pd.read_csv("../data/dev_data.csv")
 
 
 # create a dataframe of zeros   |
@@ -48,17 +46,9 @@ realZeros = credit_data_df_legit.shape[0]
 load_balancing_ratio = 1.0
 numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
 index = ['Ones', 'Zeros']
-random_seeds = [12, 23, 34, 1, 56, 67, 45, 6]
+#random_seeds = [23]#12, 23, 34, 1, 56, 67, 45, 6]
+random_seeds = [12, 23, 34, 1, 56, 67]
 
-f_range = range(1,30)
-
-# df = pd.DataFrame({'Ones': numberOfOnes, 'Zeros': numberOfZeros}, index=index)
-
-# df = pd.DataFrame({'Values':['Num. Ones', 'Num. Zeros'], 'No.':[numberOfOnes, realZeros]})
-# ax = df.plot.bar(x='Values', y='No.', rot=0)
-#
-# #ax = df.plot.bar(rot=0)
-# plt.show()
 
 algs = [f_regression, f_classif , mutual_info_regression, mutual_info_classif]
 all_accuracys = {str(algs[0]):[], str(algs[1]):[], str(algs[2]):[], str(algs[3]):[]}
@@ -77,22 +67,21 @@ def plot_roc():
     plt.show()
 
 feature_headers = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']
+lengt = range(1, len(feature_headers)+1)
 for alg in algs:
-    for k in range(1,len(feature_headers)):
+    for k in lengt:
         # Array to store the accuracies and the recalls
         accuracies = []
         recalls = []
 
-
-
         for rs in random_seeds:
+            print(rs)
             # choose a random sample of zeros
             credit_data_df_legit_random = credit_data_df_legit.sample(numberOfZeros, random_state=rs)
 
             # merge the above with the ones and do the rest of the pipeline with it
             result = credit_data_df_legit_random.append(credit_data_df_fraud)
-            result = result.sample(frac=1, random_state=rs)
-
+            #result = result.sample(frac=1, random_state=rs)
             # **load-balancing**
 
             # create dataframe X, which includes variables time, amount, V1, V2, V3, V4 (dtataframe subsetin)
@@ -106,13 +95,11 @@ for alg in algs:
             X_new = select_kbest.fit_transform(X, y)
             mask = select_kbest.get_support()
 
-
-
             # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
             X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.2, random_state=rs, stratify=y)
 
             # use sklearns random forest to fit a model to train data
-            clf = LogisticRegression(random_state=rs, solver='newton-cg', class_weight='balanced')
+            clf = svm.SVC(C=1, kernel='sigmoid', cache_size=7000, probability=True, random_state=rs, class_weight='balanced')
             clf.fit(X_train, y_train)
             ml_object = [clf, mask]
             #use the model
@@ -121,18 +108,11 @@ for alg in algs:
 
             # for this classification use Predict_proba to give the probability of a 1(fraud)
             probs = clf.predict_proba(X_test)
-            # print('THis is PROBS')
-            # print(probs)
-            # print('#######################')
+
             preds = probs[:, 1]
-            # print('THis is preds')
-            # print(preds)
-            # print('---------------------')
 
             y_pred = [1 if x >= proba_threshold else 0 for x in preds]
-            # print('THis is Y_preds')
-            # print(y_pred)
-            # print('NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN')
+
 
             # use sklearn metrics to judge accuracy of model using test data
             acc = accuracy_score(y_test, y_pred)
@@ -176,28 +156,12 @@ for alg in algs:
         all_accuracys[str(alg)].append(mean_accuracy)
 
 
-
-
-# plt.plot(x_ticks, k_accuracies)
-# plt.ylabel('Accuracies')
-# plt.xlabel('Features')
-# plt.title('Features Test on Accuracies')
-# plt.xticks(x_ticks)
-# plt.show()
-#
-# plt.plot(x_ticks, k_recalls)
-# plt.ylabel('Recalls')
-# plt.title('Features Test on Recalls')
-# plt.xticks(x_ticks)
-# plt.xlabel('Features')
-# plt.show()
-
 # # import matplotlib.pyplot as plt
 plt.title('SelectKbest Test on Features - Recalls')
-plt.plot(range(len(all_recalls[str(algs[0])])), all_recalls[str(algs[0])], label='f_regression')
-plt.plot(range(len(all_recalls[str(algs[1])])), all_recalls[str(algs[1])], label='f_classif')
-plt.plot(range(len(all_recalls[str(algs[2])])), all_recalls[str(algs[2])], label='mutual_info_regression')
-plt.plot(range(len(all_recalls[str(algs[3])])), all_recalls[str(algs[3])], label='mutual_info_classif')
+plt.plot(lengt, all_recalls[str(algs[0])], label='f_regression')
+plt.plot(lengt, all_recalls[str(algs[1])], label='f_classif')
+plt.plot(lengt, all_recalls[str(algs[2])], label='mutual_info_regression')
+plt.plot(lengt, all_recalls[str(algs[3])], label='mutual_info_classif')
 #plt.plot(range(len(all_recalls[str(algs[4])])), all_recalls[str(algs[4])], label='mutual_info_regression')
 #plt.plot(range(len(all_recalls['sag'])), all_recalls['sag'], label='sag')
 plt.ylabel('Recalls')
@@ -206,12 +170,12 @@ plt.legend()
 plt.show()
 
 plt.title('SelectKbest Test on Features - Accuracies')
-plt.plot(range(len(all_accuracys[str(algs[0])])), all_accuracys[str(algs[0])], label='f_regression')
-plt.plot(range(len(all_accuracys[str(algs[1])])), all_accuracys[str(algs[1])], label='f_classif')
-plt.plot(range(len(all_accuracys[str(algs[2])])), all_accuracys[str(algs[2])], label='mutual_info_regression')
-plt.plot(range(len(all_accuracys[str(algs[3])])), all_accuracys[str(algs[3])], label='mutual_info_classif')
+plt.plot(lengt, all_accuracys[str(algs[0])], label='f_regression')
+plt.plot(lengt, all_accuracys[str(algs[1])], label='f_classif')
+plt.plot(lengt, all_accuracys[str(algs[2])], label='mutual_info_regression')
+plt.plot(lengt, all_accuracys[str(algs[3])], label='mutual_info_classif')
 plt.ylabel('Accuracies')
 plt.xlabel('Features')
 plt.legend()
 plt.show()
-#f_classif, f_oneway , mutual_info_classif , mutual_info_regression
+#f_classif, f_regression , mutual_info_classif , mutual_info_regression

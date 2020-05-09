@@ -16,6 +16,7 @@ import mpl_toolkits as mpl
 import matplotlib as mpl
 import matplotlib.ticker
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
 
 x_ticks=[]
 k_accuracies=[]
@@ -24,26 +25,27 @@ k_recalls=[]
 line_number=1
 
 #Lower the threshold from 0.5 to 0.2 in order to retrieve positive results that would otherwise be negative when the model lacks confidence i.e probabilty 0.45
-proba_threshold = 0.5
+proba_threshold = 0.33
 
 #load the credit card csv file
-credit_data_df = pd.read_csv("data/creditcard.csv")
-test_data_df = pd.read_csv("data/credit.csv")
+credit_data_df = pd.read_csv("data/dev_data.csv")
 # create a dataframe of zeros   |
 credit_data_df_legit = credit_data_df[credit_data_df['Class'] == 0]
-
+print(credit_data_df_legit)
 # create a dataframe of 1s only |
 credit_data_df_fraud = credit_data_df[credit_data_df['Class'] == 1]
 
+print(credit_data_df.shape)
 # count ones |
 #no. of rows
 numberOfOnes = credit_data_df_fraud.shape[0]
-# print(numberOfOnes)
+
 load_balancing_ratio = 1.0
-# **load-balancing**
+
 numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
 index = ['Ones', 'Zeros']
 random_seeds = [12, 23, 34, 1, 56, 67, 45, 6]
+#random_seeds = [23]
 
 #Method to plot the ROC curve
 def plot_roc():
@@ -61,6 +63,8 @@ features = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10',
 # Array to store the accuracies and the recalls
 accuracies = []
 recalls = []
+precisions = []
+f1_scores = []
 
 
 for rs in random_seeds:
@@ -71,23 +75,25 @@ for rs in random_seeds:
     # merge the above with the ones and do the rest of the pipeline with it
     result = credit_data_df_legit_random.append(credit_data_df_fraud)
 
-    #Shuffle the result
-    #result = result.sample(frac=1, random_state=rs)
-
-
     # create dataframe X, which includes variables time, amount, V1, V2, V3, V4 (dtataframe subsetin)
     X = result[features]
 
     # create array y, which includes the classification only
     y = result['Class']
 
+
     #Select the best features
-    select_kbest = SelectKBest(mutual_info_classif, k=29)
+    select_kbest = SelectKBest(mutual_info_classif, k=26)
+    #Fit the method onto the data and then return a transformed array
     X_new =select_kbest.fit_transform(X, y)
     mask = select_kbest.get_support()
 
     # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
     X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.2, random_state=rs, stratify=y)
+    # scaler = StandardScaler()
+    # scaler.fit(X_train)
+    # X_train = scaler.transform(X_train)
+    # X_test = scaler.transform(X_test)
 
     # use sklearns random forest to fit a model to train data
     clf = RandomForestClassifier(n_estimators=100, random_state=rs,class_weight='balanced')
@@ -99,7 +105,6 @@ for rs in random_seeds:
     # for this classification use Predict_proba to give the probability of a 1(fraud)
     probs = clf.predict_proba(X_test)
     preds = probs[:, 1]
-
 
     y_pred = [1 if x >= proba_threshold else 0 for x in preds]
 
@@ -118,6 +123,13 @@ for rs in random_seeds:
 
     recall = tp / (tp + fn)
     recalls.append(recall)
+
+    precision = tp / (tp + fp)
+    precisions.append(precision)
+
+    f1_score = 2 * ((precision * recall) / (precision + recall))
+    f1_scores.append(f1_score)
+
     print(classification_report(y_test, y_pred, target_names=target_names))
 
     fpr, tpr, threshold = metrics.roc_curve(y_test, preds)
@@ -130,13 +142,68 @@ for rs in random_seeds:
 
 #plot_roc()
 
+# g = sns.catplot('Class', 'Time', data=result)
+# g.ax.set_title('Social media preferences by age')
+# g.ax.set_ylabel('Social media')
+# g.ax.yaxis.set_major_formatter(
+# mpl.ticker.EngFormatter(places=0))
+# g.ax.set_xlabel('Age')
+# plt.show()
+
+# sns.scatterplot('Amount', 'Time', data=result)
+# result.plot.scatter(x='Time',y='Amount', s=1)
+
+df = credit_data_df[['Time','Class']]
+
+# ax = credit_data_df_fraud['Time'].plot.hist()
+# ax.xaxis.set_major_formatter(
+# mpl.ticker.EngFormatter(places=0))
+# plt.show()
+
+
+#bins = np.arange(df['Amount'].min(), df['Amount'].max() + 1, 10)
+# ax = df['Amount'].plot.hist(bins = 4)
+# ax.set_title('Histogram of the heights of people in the class')
+# ax.set_xlabel('Amount')
+# ax.set_ylabel('Frequency')
+# mean = df.Amount.mean()
+# ax.xaxis.set_major_formatter(
+# mpl.ticker.EngFormatter(places=0))
+# ax.axvline(mean, color='black', linestyle='dashed', linewidth=1)
+# ax.annotate('mean={:0.1f}'.format(mean), xy=(mean + 0.2, 5.5), xytext=(mean + 15, 106.2), arrowprops=dict(facecolor='black', shrink=0.5))
+# plt.show()
+#ax = df['Amount'].plot.box()
+from scipy.stats import norm
+# #time = credit_data_df['Time'].values
+
+#
+# time = credit_data_df_fraud['Time'].values
+# fig, ax = plt.subplots()
+# sns.distplot(time, ax=ax, color = 'r', bins=24)
+# ax.set_title('Distribution of Transaction Time')
+# ax.xaxis.set_major_formatter(
+# mpl.ticker.EngFormatter(places=0))
+# ax.set_xlim([min(time), max(time)])
+
+
+# ax = df.boxplot(by='Class')
+# ax.set_title('-')
+# ax.figure.suptitle('')
+# ax.set_xlabel('Class')
+# ax.yaxis.set_major_formatter(
+# mpl.ticker.EngFormatter(places=0))
+# ax.set_ylabel('Time or Amount')
+
+plt.show()
+
 
 #calculate the mean accuracy
 mean_accuracy = np.mean(np.array(accuracies))
-#Calculate the mean recall
+#Calculate the mean recalldf.plot.scatter(x='Time',y='Number_of_Vehicles', s=1)
 mean_recall = np.mean(np.array(recalls))
 
 print('accuracy mean = ' + str(mean_accuracy))
 print('recall mean = ' + str(mean_recall))
-
+print('precision mean = ' + str(np.mean(np.array(precisions))))
+print('F1 mean = ' + str(np.mean(np.array(f1_scores))))
 

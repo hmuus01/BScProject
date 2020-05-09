@@ -8,7 +8,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
-from sklearn.feature_selection import SelectKBest, f_regression
+from sklearn.feature_selection import SelectKBest, f_regression, mutual_info_classif
 import pickle
 
 import matplotlib.pyplot as plt
@@ -25,7 +25,7 @@ proba_threshold = 0.5
 #Array to store the accuracies and the recalls
 
 #load the credit card csv file
-credit_data_df = pd.read_csv("data/creditcard.csv")
+credit_data_df = pd.read_csv("data/dev_data.csv")
 
 
 # create a dataframe of zeros   | example rslt_df = dataframe[dataframe['Percentage'] > 80]
@@ -55,7 +55,7 @@ def plot_roc():
 
 
 feature_headers = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']
-for k in range(5, 50, 5):
+for k in range(60, 180, 20):
     accuracies = []
     recalls = []
     for rs in random_seeds:
@@ -74,7 +74,7 @@ for k in range(5, 50, 5):
         y = result['Class']
 
         #Select the 20 best features
-        select_kbest = SelectKBest(f_regression, k=29)
+        select_kbest = SelectKBest(mutual_info_classif, k=29)
         X_new =select_kbest.fit_transform(X, y)
         mask = select_kbest.get_support()
 
@@ -82,7 +82,7 @@ for k in range(5, 50, 5):
         X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.2, random_state=rs, stratify=y)
 
         # use sklearns random forest to fit a model to train data
-        clf = RandomForestClassifier(n_estimators=100, max_depth=k, random_state=rs,class_weight={1: int(load_balancing_ratio)})
+        clf = RandomForestClassifier(n_estimators=k, random_state=rs,class_weight='balanced')
         clf.fit(X_train, y_train)
         ml_object = [clf, mask]
         #use the model
@@ -136,15 +136,15 @@ for k in range(5, 50, 5):
 
 plt.plot(x_ticks, k_accuracies)
 plt.ylabel('Accuracies')
-plt.title('Max-Depth Trees Test - Accuracies')
+plt.title('Decision Trees Test - Accuracies')
 plt.xticks(x_ticks)
-plt.xlabel('Depth of the  Tree')
+plt.xlabel('No. of Trees')
 plt.show()
 
 plt.plot(x_ticks, k_recalls)
 plt.ylabel('Recalls')
 plt.xticks(x_ticks)
-plt.title('Max-Depth Trees Test - Recalls')
-plt.xlabel('Depth of the Tree')
+plt.title('Decision Trees Test - Recalls')
+plt.xlabel('No. of Trees')
 plt.show()
 

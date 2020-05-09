@@ -9,11 +9,10 @@ import numpy as np
 
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
-from sklearn.feature_selection import SelectKBest, f_regression
+from sklearn.feature_selection import SelectKBest, f_regression, mutual_info_classif
 from sklearn import svm
 
 import matplotlib.pyplot as plt
@@ -28,7 +27,7 @@ proba_threshold = 0.5
 
 accuracies= []
 recalls = []
-credit_data_df = pd.read_csv("data/creditcard.csv")
+credit_data_df = pd.read_csv("data/dev_data.csv")
 
 # create a dataframe of zeros   | example rslt_df = dataframe[dataframe['Percentage'] > 80]
 credit_data_df_legit = credit_data_df[credit_data_df['Class'] == 0]
@@ -37,15 +36,9 @@ credit_data_df_fraud = credit_data_df[credit_data_df['Class'] == 1]
 
 feature_headers = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']
 
+random_seeds = [23]#, 34]#, 1, 56]#, 67, 45, 6]
 
-# load_balancing_ratio=2.0
-# # count ones |
-# numberOfOnes = credit_data_df_fraud.shape[0]
-# #load_balancing_ratio = 1.0
-# numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
-random_seeds = [12, 23]#, 34]#, 1, 56]#, 67, 45, 6]
-
-lb_range=range(1, 15)
+lb_range=range(1, 21)
 for load_balancing_ratio in lb_range:
     accuracies = []
     recalls = []
@@ -68,20 +61,19 @@ for load_balancing_ratio in lb_range:
         # create array y, which includes the classification only
         y = result['Class']
 
-        select_kbest = SelectKBest(f_regression, k=29)
+        select_kbest = SelectKBest(mutual_info_classif, k=5)
         X_new = select_kbest.fit_transform(X, y)
         mask = select_kbest.get_support()
 
         # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
-        X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.1, random_state=rs, stratify=y) #,kernel='poly', degree=2,
+        X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.2, random_state=rs, stratify=y)
 
-        clf = svm.SVC(C=1, kernel='linear', cache_size=7000, probability=True, random_state=rs, class_weight='balanced')
+        clf = svm.SVC(C=1, kernel='sigmoid', cache_size=7000, probability=True, random_state=rs, class_weight='balanced')
         clf.fit(X_train, y_train)
         ml_object = [clf, mask]
 
         # use the model
         #pickle.dump(ml_object, open(path.join('models', 'svm.pkl'), 'wb'))
-        #y_pred = clf.predict(X_test)
         probs = clf.predict_proba(X_test)
         preds = probs[:, 1]
         #if probability  is above the threshold classify as a 1
@@ -125,21 +117,13 @@ for load_balancing_ratio in lb_range:
     k_recalls.append(mean_recall)
 
 
-    #Histogram & boxplot of accuracies and recalls
-
-    #Tod o: Visualize observations (zeros and ones)
-    ## Play with sample weight
-    ## try with different load balancing levels like 1:2 or 1:4 etc.
-    # plot probability distributions
-    # plot the hyperplanes
-
-
 
 plt.plot(lb_range, k_accuracies)
 plt.ylabel('Accuracies')
 plt.xlabel('Load-Balancing Ratio')
 plt.title('SVM Load-Balancing Test on Accuracies')
 plt.xticks(lb_range)
+plt.savefig("svc_1.png", dpi=300, bbox_inches='tight')
 plt.show()
 
 plt.plot(lb_range, k_recalls)
@@ -147,25 +131,6 @@ plt.ylabel('Recalls')
 plt.title('SVM Load-Balancing Test on Recalls')
 plt.xticks(lb_range)
 plt.xlabel('Load-Balancing Ratio')
+plt.savefig("svm_2.png", dpi=300, bbox_inches='tight')
 plt.show()
 
-# plt.plot(k_accuracies)
-# plt.ylabel('accuracies')
-# plt.xticks(x_ticks)
-# plt.show()
-#
-# plt.plot(k_recalls)
-# plt.ylabel('recalls')
-# plt.xticks(x_ticks)
-# plt.show()
-
-# plt.plot(lb_range, k_accuracies)
-# plt.ylabel('accuracies')
-# plt.title('SVM')
-# plt.xticks(lb_range)
-# plt.show()
-#
-# plt.plot(lb_range, k_recalls)
-# plt.ylabel('recalls')
-# plt.xticks(lb_range)
-# plt.show()

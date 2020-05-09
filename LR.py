@@ -17,6 +17,7 @@ import mpl_toolkits as mpl
 import matplotlib as mpl
 import matplotlib.ticker
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
 
 x_ticks=[]
 k_accuracies=[]
@@ -27,8 +28,7 @@ k_recalls=[]
 proba_threshold = 0.5
 
 #load the credit card csv file
-credit_data_df = pd.read_csv("data/creditcard.csv")
-test_data_df = pd.read_csv("data/credit.csv")
+credit_data_df = pd.read_csv("data/dev_data.csv")
 # create a dataframe of zeros   |
 credit_data_df_legit = credit_data_df[credit_data_df['Class'] == 0]
 
@@ -41,13 +41,12 @@ numberOfOnes = credit_data_df_fraud.shape[0]
 print(numberOfOnes)
 realZeros = credit_data_df_legit.shape[0]
 # print(realZeros)
-load_balancing_ratio = 2.0
+load_balancing_ratio = 3.0
 # **load-balancing**
 numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
-print(numberOfZeros)
-index = ['Ones', 'Zeros']
-random_seeds = [12, 23, 34, 1, 56, 67, 45, 6]
 
+#random_seeds = [12, 23, 34, 1, 56, 67, 45, 6]
+random_seeds = [12]
 
 #Method to plot the ROC curve
 def plot_roc():
@@ -65,7 +64,8 @@ features = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10',
 # Array to store the accuracies and the recalls
 accuracies = []
 recalls = []
-
+precisions = []
+f1_scores = []
 for rs in random_seeds:
     print('Random Seed value is ' + str(rs))
     # choose a random sample of zeros
@@ -84,20 +84,22 @@ for rs in random_seeds:
     y = result['Class']
 
     #Select the 20 best features
-    select_kbest = SelectKBest(mutual_info_classif, k=29)
+    #f_classif 24
+    select_kbest = SelectKBest(f_classif, k=24)
     X_new =select_kbest.fit_transform(X, y)
     mask = select_kbest.get_support()
+
 
     # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
     X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.2, random_state=rs, stratify=y)
 
     # use sklearns random forest to fit a model to train data
-    clf = LogisticRegression(random_state=rs, solver='newton-cg', class_weight='balanced', max_iter=1000)
+    clf = LogisticRegression(random_state=rs, solver='liblinear', class_weight='balanced', max_iter=1000)
     clf.fit(X_train, y_train)
     # print(clf.fit(X_train,y_train))
     ml_object = [clf, mask]
     #use the model
-    #pickle.dump(ml_object, open(path.join('models', 'rf.pkl'), 'wb'))
+    #pickle.dump(ml_object, open(path.join('models', 'lr2.pkl'), 'wb'))
     #y_pred = clf.predict(X_test)
 
     # for this classification use Predict_proba to give the probability of a 1(fraud)
@@ -125,6 +127,13 @@ for rs in random_seeds:
 
     recall = tp / (tp + fn)
     recalls.append(recall)
+
+    precision = tp / (tp + fp)
+    precisions.append(precision)
+
+    f1_score = 2 * ((precision * recall) / (precision + recall))
+    f1_scores.append(f1_score)
+
     print(classification_report(y_test, y_pred, target_names=target_names))
 
     fpr, tpr, threshold = metrics.roc_curve(y_test, preds)
@@ -134,21 +143,20 @@ for rs in random_seeds:
     observations_df['y_true'] = y_test
     observations_df['prediction'] = y_pred
     observations_df['proba'] = preds
-print("random credit data " + str(credit_data_df_legit_random.shape[0]))
-print("result " + str(result.shape[0]))
-print(X_test.shape)
-print(y_test.shape)
-plot_roc()
-cm = confusion_matrix(y_test,y_pred)
-#Plot Confusion Matrix
-ax = plt.subplot()
-sns.heatmap(cm, ax=ax, annot=True, cmap=plt.cm.Reds, fmt='d')
-ax.set_title("Logistic Regression \n Confusion Matrix", fontsize=14)
-ax.set_xlabel("Predicted Label")
-ax.set_ylabel("True Label")
-plt.show()
-
+#print("random credit data " + str(credit_data_df_legit_random.shape[0]))
+#print("result " + str(result.shape[0]))
+#print(X_test.shape)
+#print(y_test.shape)
 #plot_roc()
+# cm = confusion_matrix(y_test,y_pred)
+# #Plot Confusion Matrix
+# ax = plt.subplot()
+# sns.heatmap(cm, ax=ax, annot=True, cmap=plt.cm.Reds, fmt='d')
+# ax.set_title("Logistic Regression \n Confusion Matrix", fontsize=14)
+# ax.set_xlabel("Predicted Label")
+# ax.set_ylabel("Actual Label")
+# plt.show()
+
 #Threshold
 #ROC prob
 
@@ -160,10 +168,13 @@ mean_recall = np.mean(np.array(recalls))
 print('accuracy mean = ' + str(mean_accuracy))
 print('recall mean = ' + str(mean_recall))
 
-cv_range = 10 #[1,2,3,4,5,6,7,8,9,10]
-cross_v = cross_val_score(clf, X_train, y_train, cv=cv_range,)
+print('precision mean = ' + str(np.mean(np.array(precisions))))
+print('F1 mean = ' + str(np.mean(np.array(f1_scores))))
 
-#print('Cross validation is ' + str(cross_v))
-print('Cross_v mean is ' + str(cross_v.mean()))
+# cv_range = 10 #[1,2,3,4,5,6,7,8,9,10]
+# cross_v = cross_val_score(clf, X_train, y_train, cv=cv_range,)
+#
+# #print('Cross validation is ' + str(cross_v))
+# print('Cross_v mean is ' + str(cross_v.mean()))
 
 

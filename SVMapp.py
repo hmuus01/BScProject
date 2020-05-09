@@ -10,26 +10,25 @@ import seaborn as sns
 
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
-from sklearn.feature_selection import SelectKBest, f_regression, mutual_info_classif
+from sklearn.feature_selection import SelectKBest, f_regression, mutual_info_classif, f_classif
 from sklearn import svm
 
 import matplotlib.pyplot as plt
-
+from sklearn.preprocessing import StandardScaler
 
 x_ticks=[]
 k_accuracies=[]
 k_recalls=[]
 
 
-proba_threshold = 0.5
+proba_threshold = 0.24 #or 0.2
 
 accuracies= []
 recalls = []
-credit_data_df = pd.read_csv("data/creditcard.csv")
+credit_data_df = pd.read_csv("data/dev_data.csv")
 
 # create a dataframe of zeros   | example rslt_df = dataframe[dataframe['Percentage'] > 80]
 credit_data_df_legit = credit_data_df[credit_data_df['Class'] == 0]
@@ -38,13 +37,17 @@ credit_data_df_fraud = credit_data_df[credit_data_df['Class'] == 1]
 
 feature_headers = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']
 
-
-# load_balancing_ratio=2.0
-# # count ones |
-# numberOfOnes = credit_data_df_fraud.shape[0]
 load_balancing_ratio = 1.0
-# numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
-random_seeds = [1, 56, 67] #12, 23, 34]#, 1, 56]#, 67, 45, 6]
+numberOfOnes = credit_data_df_fraud.shape[0]
+# **load-balancing**
+numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
+
+#random_seeds = [1, 56, 67, 12, 23, 34,23]#, 1, 56]#, 67, 45, 6]
+#random_seeds = [12, 23] #12, 23, 34, 1, 56, 67, 45, 6, 23]
+#random_seeds = [12, 23, 34, 1, 56, 67, 45, 6]
+random_seeds = [12, 23, 34, 1, 56, 67]
+#random_seeds = [None]
+
 
 #Method to plot the ROC curve
 def plot_roc():
@@ -60,9 +63,8 @@ def plot_roc():
 
 accuracies = []
 recalls = []
-numberOfOnes = credit_data_df_fraud.shape[0]
-# **load-balancing**
-numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
+precisions = []
+f1_scores = []
 for rs in random_seeds:
     print(rs)
     # choose a random sample of zeros
@@ -70,7 +72,6 @@ for rs in random_seeds:
 
     # merge the above with the ones and do the rest of the pipeline with it
     result = credit_data_df_legit_random.append(credit_data_df_fraud)
-    result = result.sample(frac=1, random_state=rs)
     # **load-balancing**
 
     # create dataframe X, which includes variables time, amount, V1, V2, V3, V4 (dtataframe subsetin)
@@ -79,19 +80,20 @@ for rs in random_seeds:
     # create array y, which includes the classification only
     y = result['Class']
 
-    select_kbest = SelectKBest(mutual_info_classif, k=29)
+    select_kbest = SelectKBest(f_classif, k=5)
     X_new = select_kbest.fit_transform(X, y)
     mask = select_kbest.get_support()
 
     # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
     X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.2, random_state=rs, stratify=y) #,kernel='poly', degree=2,
 
+
     clf = svm.SVC(C=1, kernel='linear', probability=True, random_state=rs, class_weight='balanced')
     clf.fit(X_train, y_train)
     ml_object = [clf, mask]
 
     # use the model
-    #pickle.dump(ml_object, open(path.join('models', 'svc.pkl'), 'wb'))
+    #pickle.dump(ml_object, open(path.join('models', 'svc2.pkl'), 'wb'))
     #y_pred = clf.predict(X_test)
     probs = clf.predict_proba(X_test)
     preds = probs[:, 1]
@@ -114,6 +116,12 @@ for rs in random_seeds:
 
     recall = tp / (tp + fn)
     recalls.append(recall)
+
+    precision = tp / (tp + fp)
+    precisions.append(precision)
+
+    f1_score = 2 * ((precision * recall) / (precision + recall))
+    f1_scores.append(f1_score)
     print(classification_report(y_test, y_pred, target_names=target_names))
 
     fpr, tpr, threshold = metrics.roc_curve(y_test, preds)
@@ -129,9 +137,9 @@ cm = confusion_matrix(y_test,y_pred)
 #Plot Confusion Matrix
 ax = plt.subplot()
 sns.heatmap(cm, ax=ax, annot=True, cmap=plt.cm.Reds, fmt='d')
-ax.set_title("SVM \n Confusion Matrix", fontsize=14)
+ax.set_title("SVM \n Confusion Matrix")
 ax.set_xlabel("Predicted Label")
-ax.set_ylabel("True Label")
+ax.set_ylabel("Actual Label")
 plt.show()
 #Threshold
 #ROC prob
@@ -141,7 +149,8 @@ print('accuracy mean = ' + str(mean_accuracy))
 print('recall mean = ' + str(mean_recall))
 # k_accuracies.append(mean_accuracy)
 # k_recalls.append(mean_recall)
-
+print('precision mean = ' + str(np.mean(np.array(precisions))))
+print('F1 mean = ' + str(np.mean(np.array(f1_scores))))
 
 #Histogram & boxplot of accuracies and recalls
 

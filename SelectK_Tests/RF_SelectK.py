@@ -28,8 +28,7 @@ proba_threshold = 0.5
 # recalls = []
 
 #load the credit card csv file
-credit_data_df = pd.read_csv("data/creditcard.csv")
-test_data_df = pd.read_csv("data/credit.csv")
+credit_data_df = pd.read_csv("../data/dev_data.csv")
 
 
 # create a dataframe of zeros   |
@@ -65,19 +64,23 @@ def plot_roc():
     plt.show()
 
 feature_headers = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']
+leng = range(1,len(feature_headers)+1)
 for alg in algs:
-    for k in range(1,len(feature_headers)):
+    print("alg" + str(alg))
+    for k in leng:
+        #print('k is '+ str(k))
         # Array to store the accuracies and the recalls
         accuracies = []
         recalls = []
 
         for rs in random_seeds:
             # choose a random sample of zeros
+            print(rs)
             credit_data_df_legit_random = credit_data_df_legit.sample(numberOfZeros, random_state=rs)
 
             # merge the above with the ones and do the rest of the pipeline with it
             result = credit_data_df_legit_random.append(credit_data_df_fraud)
-            result = result.sample(frac=1, random_state=rs)
+            #result = result.sample(frac=1, random_state=rs)
             # **load-balancing**
 
             # create dataframe X, which includes variables time, amount, V1, V2, V3, V4 (dtataframe subsetin)
@@ -168,10 +171,11 @@ for alg in algs:
 
 # # import matplotlib.pyplot as plt
 plt.title('SelectKbest Test on Features - Recalls')
-plt.plot(range(len(all_recalls[str(algs[0])])), all_recalls[str(algs[0])], label='f_regression')
-plt.plot(range(len(all_recalls[str(algs[1])])), all_recalls[str(algs[1])], label='f_classif')
-plt.plot(range(len(all_recalls[str(algs[2])])), all_recalls[str(algs[2])], label='mutual_info_regression')
-plt.plot(range(len(all_recalls[str(algs[3])])), all_recalls[str(algs[3])], label='mutual_info_classif')
+#range(len(all_recalls[str(algs[0])])),
+plt.plot(leng, all_recalls[str(algs[0])], label='f_regression')
+plt.plot(leng, all_recalls[str(algs[1])], label='f_classif')
+plt.plot(leng, all_recalls[str(algs[2])], label='mutual_info_regression')
+plt.plot(leng, all_recalls[str(algs[3])], label='mutual_info_classif')
 #plt.plot(range(len(all_recalls[str(algs[4])])), all_recalls[str(algs[4])], label='mutual_info_regression')
 #plt.plot(range(len(all_recalls['sag'])), all_recalls['sag'], label='sag')
 plt.ylabel('Recalls')
@@ -180,10 +184,10 @@ plt.legend()
 plt.show()
 
 plt.title('SelectKbest Test on Features - Accuracies')
-plt.plot(range(len(all_accuracys[str(algs[0])])), all_accuracys[str(algs[0])], label='f_regression')
-plt.plot(range(len(all_accuracys[str(algs[1])])), all_accuracys[str(algs[1])], label='f_classif')
-plt.plot(range(len(all_accuracys[str(algs[2])])), all_accuracys[str(algs[2])], label='mutual_info_regression')
-plt.plot(range(len(all_accuracys[str(algs[3])])), all_accuracys[str(algs[3])], label='mutual_info_classif')
+plt.plot(leng, all_accuracys[str(algs[0])], label='f_regression')
+plt.plot(leng, all_accuracys[str(algs[1])], label='f_classif')
+plt.plot(leng, all_accuracys[str(algs[2])], label='mutual_info_regression')
+plt.plot(leng, all_accuracys[str(algs[3])], label='mutual_info_classif')
 plt.ylabel('Accuracies')
 plt.xlabel('Features')
 plt.legend()

@@ -22,7 +22,7 @@ proba_threshold = 0.5
 x_ticks=[]
 accuracies= []
 recalls = []
-credit_data_df = pd.read_csv("data/creditcard.csv")
+credit_data_df = pd.read_csv("data/dev_data.csv")
 
 # create a dataframe of zeros   | example rslt_df = dataframe[dataframe['Percentage'] > 80]
 credit_data_df_legit = credit_data_df[credit_data_df['Class'] == 0]

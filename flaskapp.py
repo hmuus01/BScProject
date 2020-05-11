@@ -11,11 +11,12 @@ import csv
 app = Flask(__name__)
 
 #1 The client: reads in a test dataset
-path = os.path.join('data', 'cred.csv')
+path = os.path.join('data', 'validation_data.csv')
 print('reading csv')
-data_df = pd.read_csv(path)
-print('sampling')
-data_df = data_df.sample(frac=0.1)
+data_df = pd.read_csv(path, header=None)
+print('shuffling')
+data_df = data_df.sample(frac=1)
+print(data_df)
 #TEST Data
 
 @app.route('/', methods=["GET", "POST"])
@@ -35,24 +36,24 @@ def option():
         print("Hello")
         selectValue = request.form.get('transaction')
         selectModel = request.form.get('model')
-        print("This is  selectvalue = "+selectValue)
+        print("This is  selectvalue = " + selectValue)
         print("This is  selectmodel = " + selectModel)
         #######################################################
         #get the index of the transaction row
         user_response = int(selectValue)
+        print("user_response = " + str(user_response))
         #path to datafile
-        data_file = os.path.join('data', 'cred.csv')
-        #open the file
-        with open(data_file) as csv_file:
-            #get all the csv rows and columns (matrix)
-            csv_reader = csv.reader(csv_file, delimiter=',')
-            #read the transaction rows into a list
-            transaction_rows = [x for x in csv_reader]
+        transaction_rows = data_df.values.tolist()
+        print("Transaction_rows = " + str(transaction_rows))
          #concatenate features for row corresponding to user response)
-        row_str = ' '.join(transaction_rows[user_response][:-1])
+        strings_to_send = transaction_rows[user_response][:-1]
+        print("Strings to send = " + str(strings_to_send))
+        row_str = ' '.join([str(x) for x in strings_to_send])
+        print("row_str = " + str(row_str))
         # <m> <f1> <f2> <f3> <...> <fn>
         #concatenate the selected model to the corresponding
         send_str = ' '.join([selectModel, row_str])
+        print("send_str = " + str(send_str))
         # 4 The client sends to the server, the transaction features and the model
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((HOST, PORT))
@@ -61,14 +62,14 @@ def option():
             data = s.recv(1024).decode('utf-8')
 
         ##############################################
-        print(data)
+        print("data received = " + str(data))
+        print("true val: " + str(transaction_rows[user_response][-1]))
     # 8 The client displays the result back to the user
-    return redirect(url_for('drop', response=str(data)+'_' + str(transaction_rows[user_response][-1])+'_' + str(transaction_rows[user_response][-2])))
+    return redirect(url_for('drop', response=str(data)+'_' + str(int(transaction_rows[user_response][-1]))+'_' + str(transaction_rows[user_response][-2])))
 
 
 @app.route('/drop', methods=['GET', 'POST'])
 def drop():
-    path = os.path.join('data', 'cred.csv')
     response = request.args['response'].split('_')[0]
     true_val = request.args['response'].split('_')[1]
     price = request.args['response'].split('_')[2]
@@ -76,11 +77,11 @@ def drop():
     num_transactions = data_df.shape[0]
     print('length: ' + str(num_transactions))
 
-    transactions = ['transaction ' + str(i)for i in range(1, num_transactions)]
+    transactions = ['transaction ' + str(i)for i in range(1, num_transactions + 1)]
     indexes = [i for i in range(num_transactions)]
     # server uses model to predict the legitimacy of the data
 
-    models = ['rf', 'svc', 'lr']
+    models = ['rf', 'svc2', 'lr2']
     model_indexes = [i for i in range(len(models))]
 
     # 2 The client displays the test dataset transactions to the user, along with a choice of three models

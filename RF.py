@@ -5,45 +5,38 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 from sklearn import metrics
-from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
-from sklearn.feature_selection import SelectKBest, f_regression, mutual_info_classif, f_classif
-import pickle
-import mpl_toolkits as mpl
-import matplotlib as mpl
-import matplotlib.ticker
+from sklearn.feature_selection import SelectKBest, mutual_info_classif
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import StandardScaler
 
-x_ticks=[]
-k_accuracies=[]
-k_recalls=[]
 
-line_number=1
-
-#Lower the threshold from 0.5 to 0.2 in order to retrieve positive results that would otherwise be negative when the model lacks confidence i.e probabilty 0.45
+#Probability threshold to classify a transaction
 proba_threshold = 0.33
 
 #load the credit card csv file
 credit_data_df = pd.read_csv("data/dev_data.csv")
 # create a dataframe of zeros   |
 credit_data_df_legit = credit_data_df[credit_data_df['Class'] == 0]
-print(credit_data_df_legit)
+
 # create a dataframe of 1s only |
 credit_data_df_fraud = credit_data_df[credit_data_df['Class'] == 1]
 
-print(credit_data_df.shape)
 # count ones |
 #no. of rows
 numberOfOnes = credit_data_df_fraud.shape[0]
 
+#LBR set to 1 in order to have an equal amount of 0's and 1's
 load_balancing_ratio = 1.0
 
+#Set the number of zero's variable to be equal to the number of ones
 numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
-index = ['Ones', 'Zeros']
+
+#A list of random seed's used for the random state parameter as way to counteract overfitting and get the mean
+#of how the model performs from different data and different train-test splits
 random_seeds = [12, 23, 34, 1, 56, 67, 45, 6]
 #random_seeds = [23]
 
@@ -59,149 +52,114 @@ def plot_roc():
     plt.xlabel('False Positive Rate')
     plt.show()
 
+#List of features used in training the model
 features = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']
-# Array to store the accuracies and the recalls
+
+# Array to store the accuracies, recalls, precision and f1_score results
 accuracies = []
 recalls = []
 precisions = []
 f1_scores = []
 
-
+#Train the model using different random seeds
+#Do the steps below for each random seed
 for rs in random_seeds:
-    print('Random Seed value is ' + str(rs))
-    # choose a random sample of zeros
+    # choose a random sample of zeros (Legit Class)
     credit_data_df_legit_random = credit_data_df_legit.sample(numberOfZeros, random_state=rs)
 
-    # merge the above with the ones and do the rest of the pipeline with it
+    # merge the above with the ones (Fraud Class) and do the rest of the pipeline with it
     result = credit_data_df_legit_random.append(credit_data_df_fraud)
 
-    # create dataframe X, which includes variables time, amount, V1, V2, V3, V4 (dtataframe subsetin)
+    # create dataframe X, which includes variables time, amount, V1, V2, V3, V4 etc
     X = result[features]
 
     # create array y, which includes the classification only
     y = result['Class']
 
-
     #Select the best features
     select_kbest = SelectKBest(mutual_info_classif, k=26)
     #Fit the method onto the data and then return a transformed array
     X_new =select_kbest.fit_transform(X, y)
+    #Store the features selected
     mask = select_kbest.get_support()
 
     # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
     X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.2, random_state=rs, stratify=y)
-    # scaler = StandardScaler()
-    # scaler.fit(X_train)
-    # X_train = scaler.transform(X_train)
-    # X_test = scaler.transform(X_test)
 
     # use sklearns random forest to fit a model to train data
-    clf = RandomForestClassifier(n_estimators=100, random_state=rs,class_weight='balanced')
+    clf = RandomForestClassifier(n_estimators=100, random_state=rs, class_weight='balanced')
+
+    #Train the model using the training data, meaning learn about the relationship between feature and output class
     clf.fit(X_train, y_train)
+
+   #Save the trained model together with the features selected
     ml_object = [clf, mask]
-    #use the model
+
+    #save the model for future use | Uncomment the line below if you would like to save the model
     #pickle.dump(ml_object, open(path.join('models', 'rf.pkl'), 'wb'))
 
-    # for this classification use Predict_proba to give the probability of a 1(fraud)
+    # for this classification use Predict_proba to give the probability of the classes whereas predict() just predicts the output class for the test set
     probs = clf.predict_proba(X_test)
-    preds = probs[:, 1]
 
-    y_pred = [1 if x >= proba_threshold else 0 for x in preds]
+    #store just the fraudulent class probabilities
+    fraudulent_class_probabilities = probs[:, 1]
+
+    #Classify whether a transaction is legit or fraud depending on if it above or below the threshold value
+    y_pred = [1 if x >= proba_threshold else 0 for x in fraudulent_class_probabilities]
 
     # use sklearn metrics to judge accuracy of model using test data
     acc = accuracy_score(y_test, y_pred)
     accuracies.append(acc)
-    # output score
+
+    #Print the output score
     print(acc)
+
     # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html
     target_names = ['class 0', 'class 1']
+
+    #Make the confusion matric using the predicted results and check whether its similar to the actual results
     cm = confusion_matrix(y_test,y_pred)
+
+    #Print the confusion matrix
     print('Below is the confusion matrix')
     print(confusion_matrix(y_test, y_pred))
     tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
     print((tn, fp, fn, tp))
 
+    #Calculate the recall using the formula and add it to the recalls array
     recall = tp / (tp + fn)
     recalls.append(recall)
 
+    #Calculate the precision using the formula and add it to the precisions array
     precision = tp / (tp + fp)
     precisions.append(precision)
 
+    #Calculate the f1_score using the formula and add it to the f1 scores array
     f1_score = 2 * ((precision * recall) / (precision + recall))
     f1_scores.append(f1_score)
 
+    #Print the classification report
     print(classification_report(y_test, y_pred, target_names=target_names))
 
-    fpr, tpr, threshold = metrics.roc_curve(y_test, preds)
+    #Plot the points for the Roc curve and the auc score
+    fpr, tpr, threshold = metrics.roc_curve(y_test, fraudulent_class_probabilities)
     roc_auc = metrics.auc(fpr, tpr)
 
+    #Store the probability of a fraud transaction and the predictions and actutal class into a dataframe
     observations_df = pd.DataFrame(columns = ['y_true', 'prediction', 'proba'])
     observations_df['y_true'] = y_test
     observations_df['prediction'] = y_pred
-    observations_df['proba'] = preds
+    observations_df['proba'] = fraudulent_class_probabilities
 
+#Display the Roc
 #plot_roc()
 
-# g = sns.catplot('Class', 'Time', data=result)
-# g.ax.set_title('Social media preferences by age')
-# g.ax.set_ylabel('Social media')
-# g.ax.yaxis.set_major_formatter(
-# mpl.ticker.EngFormatter(places=0))
-# g.ax.set_xlabel('Age')
-# plt.show()
 
-# sns.scatterplot('Amount', 'Time', data=result)
-# result.plot.scatter(x='Time',y='Amount', s=1)
-
-df = credit_data_df[['Time','Class']]
-
-# ax = credit_data_df_fraud['Time'].plot.hist()
-# ax.xaxis.set_major_formatter(
-# mpl.ticker.EngFormatter(places=0))
-# plt.show()
-
-
-#bins = np.arange(df['Amount'].min(), df['Amount'].max() + 1, 10)
-# ax = df['Amount'].plot.hist(bins = 4)
-# ax.set_title('Histogram of the heights of people in the class')
-# ax.set_xlabel('Amount')
-# ax.set_ylabel('Frequency')
-# mean = df.Amount.mean()
-# ax.xaxis.set_major_formatter(
-# mpl.ticker.EngFormatter(places=0))
-# ax.axvline(mean, color='black', linestyle='dashed', linewidth=1)
-# ax.annotate('mean={:0.1f}'.format(mean), xy=(mean + 0.2, 5.5), xytext=(mean + 15, 106.2), arrowprops=dict(facecolor='black', shrink=0.5))
-# plt.show()
-#ax = df['Amount'].plot.box()
-from scipy.stats import norm
-# #time = credit_data_df['Time'].values
-
-#
-# time = credit_data_df_fraud['Time'].values
-# fig, ax = plt.subplots()
-# sns.distplot(time, ax=ax, color = 'r', bins=24)
-# ax.set_title('Distribution of Transaction Time')
-# ax.xaxis.set_major_formatter(
-# mpl.ticker.EngFormatter(places=0))
-# ax.set_xlim([min(time), max(time)])
-
-
-# ax = df.boxplot(by='Class')
-# ax.set_title('-')
-# ax.figure.suptitle('')
-# ax.set_xlabel('Class')
-# ax.yaxis.set_major_formatter(
-# mpl.ticker.EngFormatter(places=0))
-# ax.set_ylabel('Time or Amount')
-
-plt.show()
-
-
-#calculate the mean accuracy
+#calculate the mean accuracy and recall from the respective arrays
 mean_accuracy = np.mean(np.array(accuracies))
-#Calculate the mean recalldf.plot.scatter(x='Time',y='Number_of_Vehicles', s=1)
 mean_recall = np.mean(np.array(recalls))
 
+#Print the mean score for all metrics
 print('accuracy mean = ' + str(mean_accuracy))
 print('recall mean = ' + str(mean_recall))
 print('precision mean = ' + str(np.mean(np.array(precisions))))

@@ -4,18 +4,17 @@ from os import path
 import pandas as pd
 import numpy as np
 import seaborn as sns
-from sklearn import metrics
-from sklearn.linear_model import LogisticRegression
+from sklearn import metrics, svm
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
-from sklearn.feature_selection import SelectKBest, mutual_info_classif, f_classif
+from sklearn.feature_selection import SelectKBest, f_classif
 import matplotlib.pyplot as plt
 
 
 #Probability threshold to classify a transaction
-proba_threshold = 0.5
+proba_threshold = 0.24
 
 #load the credit card csv file
 credit_data_df = pd.read_csv("data/dev_data.csv")
@@ -30,7 +29,7 @@ credit_data_df_fraud = credit_data_df[credit_data_df['Class'] == 1]
 numberOfOnes = credit_data_df_fraud.shape[0]
 
 #LBR set to 1 in order to have an equal amount of 0's and 1's
-load_balancing_ratio = 3.0
+load_balancing_ratio = 1.0
 
 #Set the number of zero's variable to be equal to the number of ones
 numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
@@ -42,7 +41,7 @@ random_seeds = [12, 23, 34, 1, 56, 67, 45, 6]
 
 #Method to plot the ROC curve
 def plot_roc():
-    plt.title('LR - Receiver Operating Characteristic')
+    plt.title('RF - Receiver Operating Characteristic')
     plt.plot(fpr, tpr, 'b', label='AUC = %0.2f' % roc_auc)
     plt.legend(loc='lower right')
     plt.plot([0, 1], [0, 1], 'r--')
@@ -77,7 +76,7 @@ for rs in random_seeds:
     y = result['Class']
 
     #Select the best features
-    select_kbest = SelectKBest(f_classif, k=24)
+    select_kbest = SelectKBest(f_classif, k=5)
     #Fit the method onto the data and then return a transformed array
     X_new =select_kbest.fit_transform(X, y)
     #Store the features selected
@@ -86,8 +85,8 @@ for rs in random_seeds:
     # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
     X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.2, random_state=rs, stratify=y)
 
-    # use sklearns random forest to fit a model to train data
-    clf = LogisticRegression(random_state=rs, solver='liblinear', class_weight='balanced')
+    # use sklearns Support Vector Machines to fit a model to train data
+    clf = svm.SVC(C=1, kernel='linear', probability=True, random_state=rs, class_weight='balanced')
 
     #Train the model using the training data, meaning learn about the relationship between feature and output class
     clf.fit(X_train, y_train)
@@ -145,7 +144,7 @@ for rs in random_seeds:
     fpr, tpr, threshold = metrics.roc_curve(y_test, fraudulent_class_probabilities)
     roc_auc = metrics.auc(fpr, tpr)
 
-    #Store the probability of a fraud transaction and the predictions and actutal class into a dataframe
+    #Store the
     observations_df = pd.DataFrame(columns = ['y_true', 'prediction', 'proba'])
     observations_df['y_true'] = y_test
     observations_df['prediction'] = y_pred

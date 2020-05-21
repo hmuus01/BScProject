@@ -1,17 +1,17 @@
-#SUPPORT VECTOR MACHINE
+#Import Statements
+# GC - Google Cloud
 import math
-import random
 
 import pandas as pd
 import numpy as np
-from sklearn import metrics
 
+from sklearn import metrics
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.feature_selection import SelectKBest, f_regression, mutual_info_classif, f_classif
+from sklearn import svm
 
 import matplotlib.pyplot as plt
 
@@ -22,11 +22,10 @@ k_recalls=[]
 #Probability threshold to classify a transaction
 proba_threshold = 0.5
 
-
-#load the credit card csv file
+#Load the credit card csv file
 credit_data_df = pd.read_csv("../data/dev_data.csv")
 
-# create a dataframe of zeros   | example rslt_df = dataframe[dataframe['Percentage'] > 80]
+#create a dataframe of zeros
 credit_data_df_legit = credit_data_df[credit_data_df['Class'] == 0]
 
 # create a dataframe of 1s only |
@@ -37,19 +36,20 @@ credit_data_df_fraud = credit_data_df[credit_data_df['Class'] == 1]
 random_seeds = [12, 23, 34, 1, 56, 67, 45, 6]
 
 #Load balancing range
-lb_range=range(1, 21)
+lb_range=range(1, 21, 2)
 
 #List of features used in training the model
 feature_headers = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']
 
-#Do all the steps below for each load balancing ratio
+# For each load balancing ratio do the following:
 for load_balancing_ratio in lb_range:
-    #Store the accuracy and recall scores
+    # Array to store the accuracies and the recall results
     accuracies = []
     recalls = []
-    # **load-balancing** --> Class distribution
+    # **load-balancing** --> Class Distribution
     numberOfOnes = credit_data_df_fraud.shape[0]
     numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
+
     #For each random seed do the steps below (Training and evaluating)
     for rs in random_seeds:
         # choose a random sample of zeros (Legit Class)
@@ -65,9 +65,9 @@ for load_balancing_ratio in lb_range:
         y = result['Class']
 
 #################################################
-        #NOT NEEDED FOR THIS TEST
+        # NOT NEEDED FOR THIS TEST
         # # Select the best features
-        # select_kbest = SelectKBest(mutual_info_classif, k=26)
+        # select_kbest = SelectKBest(f_classif, k=5)
         # # Fit the method onto the data and then return a transformed array
         # X_new = select_kbest.fit_transform(X, y)
         # # Store the features selected
@@ -77,8 +77,8 @@ for load_balancing_ratio in lb_range:
         # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=rs, stratify=y)
 
-        # use sklearns random forest to fit a model to train data
-        clf = RandomForestClassifier(n_estimators=100, random_state=rs, class_weight='balanced')
+        # use sklearns Support Vector Machines to fit a model to train data | cach_size 7000 makes sure to use all the processors
+        clf = svm.SVC(C=1, kernel='linear', cache_size=7000, probability=True, random_state=rs, class_weight='balanced')
 
         # Train the model using the training data, meaning learn about the relationship between feature and output class
         clf.fit(X_train, y_train)
@@ -125,34 +125,37 @@ for load_balancing_ratio in lb_range:
         observations_df['prediction'] = y_pred
         observations_df['proba'] = fraudulent_class_probabilities
 
-    #Calculate the mean accuracy
+    # Calculate the mean accuracy for each run with the different random seeds
     mean_accuracy = np.mean(np.array(accuracies))
-    #Calculate the mean recall
+
+    # Calculate the mean recall for each run with the different random seeds
     mean_recall = np.mean(np.array(recalls))
 
-    #Add the mean accuracy to the K accuracies array
+    # Print the accuracy and recall mean
+    print('accuracy mean = ' + str(mean_accuracy))
+    print('recall mean = ' + str(mean_recall))
+
+    # Add the mean accuracy to the K accuracies array
     k_accuracies.append(mean_accuracy)
     # Add the mean recall to the K recalls array
     k_recalls.append(mean_recall)
 
-    #Print the accuracy and the recall means
-    print('accuracy mean = ' + str(mean_accuracy))
-    print('recall mean = ' + str(mean_recall))
+
 
 #Print the results
 plt.plot(lb_range, k_accuracies)
 plt.ylabel('Accuracies')
 plt.xlabel('Load-Balancing Ratio')
-plt.title('RF - Load-Balancing Test on Accuracies')
+plt.title('SVM Load-Balancing Test on Accuracies')
 plt.xticks(lb_range)
-#plt.grid()
+#plt.savefig("svc_1.png", dpi=300, bbox_inches='tight')
 plt.show()
 
 plt.plot(lb_range, k_recalls)
 plt.ylabel('Recalls')
-plt.title('RF - Load-Balancing Test on Recalls')
+plt.title('SVM Load-Balancing Test on Recalls')
 plt.xticks(lb_range)
 plt.xlabel('Load-Balancing Ratio')
-#plt.grid()
+#plt.savefig("svm_2.png", dpi=300, bbox_inches='tight')
 plt.show()
 

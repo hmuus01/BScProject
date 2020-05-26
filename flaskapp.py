@@ -104,7 +104,7 @@ def drop():
 
     #store the number of transactions
     num_transactions = data_df.shape[0]
-    print('length: ' + str(num_transactions))
+    #print('length: ' + str(num_transactions))
 
     #Create a list of the transactions with indexes to display on the client
     transactions = ['transaction ' + str(i)for i in range(1, num_transactions + 1)]

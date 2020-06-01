@@ -1,18 +1,21 @@
+#This file contains the steps taken to train the model and test the performance of the model
+#using the 4 performance metrics in chapter 4.6 of the report
+#Import statements
 import math
 import random
-from os import path
 import pandas as pd
 import numpy as np
-import seaborn as sns
 from sklearn import metrics
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
-from sklearn.feature_selection import SelectKBest, mutual_info_classif, f_classif
+from sklearn.feature_selection import SelectKBest, f_classif
 import matplotlib.pyplot as plt
 
+#The following library is where code for training was obtained and adapted from
+#https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html
 
 #Probability threshold to classify a transaction
 proba_threshold = 0.5
@@ -29,18 +32,22 @@ credit_data_df_fraud = credit_data_df[credit_data_df['Class'] == 1]
 #no. of rows
 numberOfOnes = credit_data_df_fraud.shape[0]
 
-#LBR set to 1 in order to have an equal amount of 0's and 1's
+#LBR set to 3 | After testing this was found to be the best LB ratio for Logistic Regression
 load_balancing_ratio = 3.0
 
 #Set the number of zero's variable to be equal to the number of ones
 numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
 
-#A list of random seed's used for the random state parameter as way to counteract overfitting and get the mean
+#A number(2000) of random seed's used for the random state parameter as way to counteract overfitting and get the mean
 #of how the model performs from different data and different train-test splits
-random_seeds = [12, 23, 34, 1, 56, 67, 45, 6]
-#random_seeds = [23]
+num_seeds=2000
+random_seeds=[]
+while len(random_seeds) < num_seeds:
+    num = random.randint(0, 5*num_seeds)
+    if num not in random_seeds:
+        random_seeds.append(num)
 
-#Method to plot the ROC curve
+# Method to plot the ROC curve
 def plot_roc():
     plt.title('LR - Receiver Operating Characteristic')
     plt.plot(fpr, tpr, 'b', label='AUC = %0.2f' % roc_auc)
@@ -61,7 +68,7 @@ recalls = []
 precisions = []
 f1_scores = []
 
-#Train the model using different random seeds
+#Train & Test the model using different random seeds
 #Do the steps below for each random seed
 for rs in random_seeds:
     # choose a random sample of zeros (Legit Class)
@@ -76,7 +83,7 @@ for rs in random_seeds:
     # create array y, which includes the classification only
     y = result['Class']
 
-    #Select the best features
+    #Select the best features Using the SelectKBest Method from sklearn
     select_kbest = SelectKBest(f_classif, k=24)
     #Fit the method onto the data and then return a transformed array
     X_new =select_kbest.fit_transform(X, y)
@@ -86,17 +93,11 @@ for rs in random_seeds:
     # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
     X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.2, random_state=rs, stratify=y)
 
-    # use sklearns random forest to fit a model to train data
+    # use sklearns Logistic Regression to fit a model to train data
     clf = LogisticRegression(random_state=rs, solver='liblinear', class_weight='balanced')
 
     #Train the model using the training data, meaning learn about the relationship between feature and output class
     clf.fit(X_train, y_train)
-
-   #Save the trained model together with the features selected
-    ml_object = [clf, mask]
-
-    #save the model for future use | Uncomment the line below if you would like to save the model
-    #pickle.dump(ml_object, open(path.join('models', 'rf.pkl'), 'wb'))
 
     # for this classification use Predict_proba to give the probability of the classes whereas predict() just predicts the output class for the test set
     probs = clf.predict_proba(X_test)
@@ -111,10 +112,11 @@ for rs in random_seeds:
     acc = accuracy_score(y_test, y_pred)
     accuracies.append(acc)
 
-    #Print the output score
+    #Print the accuracy score
     print(acc)
 
     # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html
+    # Legit - Class 0, Fraud - Class 1
     target_names = ['class 0', 'class 1']
 
     #Make the confusion matric using the predicted results and check whether its similar to the actual results
@@ -153,7 +155,6 @@ for rs in random_seeds:
 
 #Display the Roc
 #plot_roc()
-
 
 #calculate the mean accuracy and recall from the respective arrays
 mean_accuracy = np.mean(np.array(accuracies))

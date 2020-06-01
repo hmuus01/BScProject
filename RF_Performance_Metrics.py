@@ -1,9 +1,11 @@
+#This file contains the steps taken to train the model and test the performance of the model
+#using the 4 performance metrics in chapter 4.6 of the report
+#Import statements
 import math
 import random
-from os import path
 import pandas as pd
 import numpy as np
-import seaborn as sns
+from scipy.stats import stats
 from sklearn import metrics
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
@@ -13,9 +15,12 @@ from sklearn.metrics import confusion_matrix
 from sklearn.feature_selection import SelectKBest, mutual_info_classif
 import matplotlib.pyplot as plt
 
+#The following library is where code for training was obtained and adapted from
+#https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
 
 #Probability threshold to classify a transaction
-proba_threshold = 0.33
+#proba_threshold = 0.33
+proba_threshold = 0.5
 
 #load the credit card csv file
 credit_data_df = pd.read_csv("data/dev_data.csv")
@@ -29,18 +34,22 @@ credit_data_df_fraud = credit_data_df[credit_data_df['Class'] == 1]
 #no. of rows
 numberOfOnes = credit_data_df_fraud.shape[0]
 
-#LBR set to 1 in order to have an equal amount of 0's and 1's
+#LBR set to 1 | After testing this was found to be the best LB ratio for Random Forest
 load_balancing_ratio = 1.0
 
 #Set the number of zero's variable to be equal to the number of ones
 numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
 
-#A list of random seed's used for the random state parameter as way to counteract overfitting and get the mean
+#A number(2000) of random seed's used for the random state parameter as way to counteract overfitting and get the mean
 #of how the model performs from different data and different train-test splits
-random_seeds = [12, 23, 34, 1, 56, 67, 45, 6]
-#random_seeds = [23]
+num_seeds=2000
+random_seeds=[]
+while len(random_seeds) < num_seeds:
+    num = random.randint(0, 5*num_seeds)
+    if num not in random_seeds:
+        random_seeds.append(num)
 
-#Method to plot the ROC curve
+# Method to plot the ROC curve
 def plot_roc():
     plt.title('RF - Receiver Operating Characteristic')
     plt.plot(fpr, tpr, 'b', label='AUC = %0.2f' % roc_auc)
@@ -61,9 +70,10 @@ recalls = []
 precisions = []
 f1_scores = []
 
-#Train the model using different random seeds
+#Train & Test the model using different random seeds
 #Do the steps below for each random seed
 for rs in random_seeds:
+    print(rs)
     # choose a random sample of zeros (Legit Class)
     credit_data_df_legit_random = credit_data_df_legit.sample(numberOfZeros, random_state=rs)
 
@@ -79,9 +89,7 @@ for rs in random_seeds:
     #Select the best features
     select_kbest = SelectKBest(mutual_info_classif, k=26)
     #Fit the method onto the data and then return a transformed array
-    X_new =select_kbest.fit_transform(X, y)
-    #Store the features selected
-    mask = select_kbest.get_support()
+    X_new = select_kbest.fit_transform(X, y)
 
     # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
     X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.2, random_state=rs, stratify=y)
@@ -92,13 +100,10 @@ for rs in random_seeds:
     #Train the model using the training data, meaning learn about the relationship between feature and output class
     clf.fit(X_train, y_train)
 
-   #Save the trained model together with the features selected
-    ml_object = [clf, mask]
-
-    #save the model for future use | Uncomment the line below if you would like to save the model
-    #pickle.dump(ml_object, open(path.join('models', 'rf.pkl'), 'wb'))
-
-    # for this classification use Predict_proba to give the probability of the classes whereas predict() just predicts the output class for the test set
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+                                            #TESTING ON THE TEST SET
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+#     # for this classification use Predict_proba to give the probability of the classes whereas predict() just predicts the output class for the test set
     probs = clf.predict_proba(X_test)
 
     #store just the fraudulent class probabilities
@@ -111,10 +116,11 @@ for rs in random_seeds:
     acc = accuracy_score(y_test, y_pred)
     accuracies.append(acc)
 
-    #Print the output score
+    #Print the accuracy score
     print(acc)
 
     # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html
+    # Legit - Class 0, Fraud - Class 1
     target_names = ['class 0', 'class 1']
 
     #Make the confusion matric using the predicted results and check whether its similar to the actual results
@@ -145,15 +151,8 @@ for rs in random_seeds:
     fpr, tpr, threshold = metrics.roc_curve(y_test, fraudulent_class_probabilities)
     roc_auc = metrics.auc(fpr, tpr)
 
-    #Store the probability of a fraud transaction and the predictions and actutal class into a dataframe
-    observations_df = pd.DataFrame(columns = ['y_true', 'prediction', 'proba'])
-    observations_df['y_true'] = y_test
-    observations_df['prediction'] = y_pred
-    observations_df['proba'] = fraudulent_class_probabilities
-
-#Display the Roc
+#Display the Roc - (Uncomment to display)
 #plot_roc()
-
 
 #calculate the mean accuracy and recall from the respective arrays
 mean_accuracy = np.mean(np.array(accuracies))
@@ -165,3 +164,4 @@ print('recall mean = ' + str(mean_recall))
 print('precision mean = ' + str(np.mean(np.array(precisions))))
 print('F1 mean = ' + str(np.mean(np.array(f1_scores))))
 
+print('rf recall trimmed mean = ' + str(stats.trim_mean(np.array(recalls), 0.02)))

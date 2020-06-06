@@ -134,7 +134,7 @@ for optimizer in optimizers:
             recalls.append(recall)
 
             # Print the classification report
-            #print(classification_report(y_test, y_pred, target_names=target_names))
+            print(classification_report(y_test, y_pred, target_names=target_names))
 
         # Calculate and Print the mean scores for the following metrics (below)
         mean_accuracy = np.mean(np.array(accuracies))

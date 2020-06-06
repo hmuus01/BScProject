@@ -130,7 +130,7 @@ for k in range(1, len(features) + 1):
         recalls.append(recall)
 
         # Print the classification report
-        # print(classification_report(y_test, y_pred, target_names=target_names))
+        print(classification_report(y_test, y_pred, target_names=target_names))
 
     #calculate the mean accuracy
     mean_accuracy = np.mean(np.array(accuracies))

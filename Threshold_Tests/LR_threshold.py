@@ -126,7 +126,7 @@ for pt in proba_threshold:
         f1_scores.append(f1_score)
 
         # Print the classification report
-        #print(classification_report(y_test, y_pred, target_names=target_names))
+        print(classification_report(y_test, y_pred, target_names=target_names))
 
     #Append all scores to their respective arrays in order to get the mean from the 8 random seeds at each threshold
     acc_pt.append(np.mean(np.array(accuracies)))

@@ -12,6 +12,9 @@ from sklearn.metrics import confusion_matrix
 from sklearn.feature_selection import SelectKBest, mutual_info_classif
 import matplotlib.pyplot as plt
 
+#The following library is where code for training was obtained and adapted from
+#https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
+
 #Probability threshold(s) to classify a transaction | This is what is Tested in this file.
 proba_threshold = np.arange(0.1, 1.0, 0.05)
 
@@ -124,7 +127,7 @@ for pt in proba_threshold:
         f1_scores.append(f1_score)
 
         # Print the classification report
-        #print(classification_report(y_test, y_pred, target_names=target_names))
+        print(classification_report(y_test, y_pred, target_names=target_names))
 
     # Append all scores to their respective arrays in order to get the mean from the 8 random seeds at each threshold
     acc_pt.append(np.mean(np.array(accuracies)))

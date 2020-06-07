@@ -1,9 +1,10 @@
+#This file contains the steps taken to train the model and test the performance of the model
+#using the 4 performance metrics in chapter 4.6 of the report
+#Import statements
 import math
 import random
-from os import path
 import pandas as pd
 import numpy as np
-import seaborn as sns
 from sklearn import metrics, svm
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
@@ -12,9 +13,12 @@ from sklearn.metrics import confusion_matrix
 from sklearn.feature_selection import SelectKBest, f_classif
 import matplotlib.pyplot as plt
 
+#The following library is where code for training was obtained and adapted from
+#https://scikit-learn.org/stable/modules/svm.html#classification
 
 #Probability threshold to classify a transaction
-proba_threshold = 0.24
+#proba_threshold = 0.24 (for the performace of Support Vector Machines with a threshold of 0.24 Uncomment Line)
+proba_threshold = 0.5
 
 #load the credit card csv file
 credit_data_df = pd.read_csv("data/dev_data.csv")
@@ -28,16 +32,20 @@ credit_data_df_fraud = credit_data_df[credit_data_df['Class'] == 1]
 #no. of rows
 numberOfOnes = credit_data_df_fraud.shape[0]
 
-#LBR set to 1 in order to have an equal amount of 0's and 1's
+#LBR set to 1 | After testing this was found to be the best LB ratio for Support Vector Machines
 load_balancing_ratio = 1.0
 
 #Set the number of zero's variable to be equal to the number of ones
 numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
 
-#A list of random seed's used for the random state parameter as way to counteract overfitting and get the mean
+#A number(2000) of random seed's used for the random state parameter as a way to counteract overfitting and get the mean
 #of how the model performs from different data and different train-test splits
-random_seeds = [12, 23, 34, 1, 56, 67, 45, 6]
-#random_seeds = [23]
+num_seeds=2000
+random_seeds=[]
+while len(random_seeds) < num_seeds:
+    num = random.randint(0, 5*num_seeds)
+    if num not in random_seeds:
+        random_seeds.append(num)
 
 #Method to plot the ROC curve
 def plot_roc():
@@ -75,29 +83,27 @@ for rs in random_seeds:
     # create array y, which includes the classification only
     y = result['Class']
 
-    #Select the best features
+    #Select the best features | After Testing this was found to be the best amount of features for Support Vector Machines
     select_kbest = SelectKBest(f_classif, k=5)
     #Fit the method onto the data and then return a transformed array
     X_new =select_kbest.fit_transform(X, y)
-    #Store the features selected
-    mask = select_kbest.get_support()
 
     # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
     X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.2, random_state=rs, stratify=y)
 
+    # ------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+    #                                                    TRAINING ON THE TRAINING SET
+    # ------------------------------------------------------------------------------------------------------------------------------------------------------------------#
     # use sklearns Support Vector Machines to fit a model to train data
     clf = svm.SVC(C=1, kernel='linear', probability=True, random_state=rs, class_weight='balanced')
 
     #Train the model using the training data, meaning learn about the relationship between feature and output class
     clf.fit(X_train, y_train)
 
-   #Save the trained model together with the features selected
-    ml_object = [clf, mask]
-
-    #save the model for future use | Uncomment the line below if you would like to save the model
-    #pickle.dump(ml_object, open(path.join('models', 'rf.pkl'), 'wb'))
-
-    # for this classification use Predict_proba to give the probability of the classes whereas predict() just predicts the output class for the test set
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+#                                                    TESTING ON THE TEST SET
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+    #     # for this classification use Predict_proba to give the probability of the classes whereas predict() just predicts the output class for the test set
     probs = clf.predict_proba(X_test)
 
     #store just the fraudulent class probabilities
@@ -114,6 +120,7 @@ for rs in random_seeds:
     print(acc)
 
     # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html
+    # Legit - Class 0, Fraud - Class 1
     target_names = ['class 0', 'class 1']
 
     #Make the confusion matric using the predicted results and check whether its similar to the actual results
@@ -143,12 +150,6 @@ for rs in random_seeds:
     #Plot the points for the Roc curve and the auc score
     fpr, tpr, threshold = metrics.roc_curve(y_test, fraudulent_class_probabilities)
     roc_auc = metrics.auc(fpr, tpr)
-
-    #Store the
-    observations_df = pd.DataFrame(columns = ['y_true', 'prediction', 'proba'])
-    observations_df['y_true'] = y_test
-    observations_df['prediction'] = y_pred
-    observations_df['proba'] = fraudulent_class_probabilities
 
 #Display the Roc
 #plot_roc()

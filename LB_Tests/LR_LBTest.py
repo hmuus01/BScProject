@@ -1,18 +1,18 @@
+#This file contains the steps taken to train the model and test the performance of the model
+#using the three LR solvers with 20 different lBR values with and performance of this is analysed
 #Import Statements
 import math
-
 import pandas as pd
 import numpy as np
-from sklearn import metrics
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
-
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
-from sklearn.feature_selection import SelectKBest, mutual_info_classif, f_classif
-
 import matplotlib.pyplot as plt
+
+#The following library is where code for training was obtained and adapted from
+#https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html
 
 #Probability threshold to classify a transaction
 proba_threshold = 0.5
@@ -67,25 +67,21 @@ for optimizer in optimizers:
             # create array y, which includes the classification only
             y = result['Class']
 
-#################################################
-            # NOT NEEDED FOR THIS TEST
-            # # Select the best features
-            # select_kbest = SelectKBest(f_classif, k=24)
-            # # Fit the method onto the data and then return a transformed array
-            # X_new = select_kbest.fit_transform(X, y)
-            # # Store the features selected
-            # mask = select_kbest.get_support()
-#################################################
-
             # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=rs, stratify=y)
 
+            # ------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+            #                                                    TRAINING ON THE TRAINING SET
+            # ------------------------------------------------------------------------------------------------------------------------------------------------------------------#
             # use sklearns Logistic Regression to fit a model to train data
             clf = LogisticRegression(random_state=rs, solver=optimizer, class_weight='balanced', max_iter=1000)
 
             # Train the model using the training data, meaning learn about the relationship between feature and output class
             clf.fit(X_train, y_train)
 
+            # ------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+            #                                                    TESTING ON THE TEST SET
+            # ------------------------------------------------------------------------------------------------------------------------------------------------------------------#
             # for this classification use Predict_proba to give the probability of the classes whereas predict() just predicts the output class for the test set
             probs = clf.predict_proba(X_test)
 
@@ -118,15 +114,7 @@ for optimizer in optimizers:
             # Print the classification report
             print(classification_report(y_test, y_pred, target_names=target_names))
 
-            # Plot the points for the Roc curve and the auc score
-            fpr, tpr, threshold = metrics.roc_curve(y_test, fraudulent_class_probabilities)
-            roc_auc = metrics.auc(fpr, tpr)
 
-            # Store the probability of a fraud transaction and the predictions and actutal class into a dataframe
-            observations_df = pd.DataFrame(columns=['y_true', 'prediction', 'proba'])
-            observations_df['y_true'] = y_test
-            observations_df['prediction'] = y_pred
-            observations_df['proba'] = fraudulent_class_probabilities
         #Calculate the mean accuracy for each run with the different random seeds
         mean_accuracy = np.mean(np.array(accuracies))
 
@@ -137,29 +125,43 @@ for optimizer in optimizers:
         all_recalls[optimizer].append(mean_recall)
         all_accuracys[optimizer].append(mean_accuracy)
 
-        #Print the accuracy and recall mean
+        #Print the accuracy and recall mean scores
         print('accuracy mean = ' + str(mean_accuracy))
         print('recall mean = ' + str(mean_recall))
 
-#Print the results
+
+
+#Title of the plot
 plt.title('Load-Balancing Test on Recalls')
+#Plot the performance of the loadbalancing ratio with the solver below on the recall
 plt.plot(lb_range, all_recalls['lbfgs'], label='lbfgs')
+#Plot the performance of the loadbalancing ratio with the solver below on the recall
 plt.plot(lb_range, all_recalls['newton-cg'], label='newton-cg')
-#plt.plot(range(len(all_recalls['sag'])), all_recalls['sag'], label='sag')
+#Plot the performance of the loadbalancing ratio with the solver below on the recall
 plt.plot(lb_range, all_recalls['liblinear'], label='liblinear')
+#Plot the y-axis
 plt.ylabel('Recalls')
+#Plot the x-axis
 plt.xlabel('Load-Balancing Ratio')
+#Legend to show which color represents which solver
 plt.legend()
-#plt.grid()
+#Display the graph
 plt.show()
 
+
+#Title of the plot
 plt.title('Load-Balancing on Accuracies')
+#Plot the performance of the loadbalancing ratio with the solver below on the accuracy
 plt.plot(lb_range, all_accuracys['lbfgs'], label='lbfgs')
+#Plot the performance of the loadbalancing ratio with the solver below on the accuracy
 plt.plot(lb_range, all_accuracys['newton-cg'], label='newton-cg')
-#plt.plot(range(len(all_accuracys['sag'])), all_accuracys['sag'], label='sag')
+#Plot the performance of the loadbalancing ratio with the solver below on the accuracy
 plt.plot(lb_range, all_accuracys['liblinear'], label='liblinear')
+#Plot the y-axis
 plt.ylabel('Accuracies')
+#Plot the x-axis
 plt.xlabel('Load-Balancing Ratio')
+#Legend to show which color represents which solver
 plt.legend()
-#plt.grid()
+#Display the graph
 plt.show()

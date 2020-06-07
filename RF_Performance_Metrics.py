@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 #https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
 
 #Probability threshold to classify a transaction
-#proba_threshold = 0.33
+#proba_threshold = 0.33 (for the performace of random forest with a threshold of 0.33 Uncomment Line)
 proba_threshold = 0.5
 
 #load the credit card csv file
@@ -86,7 +86,7 @@ for rs in random_seeds:
     # create array y, which includes the classification only
     y = result['Class']
 
-    #Select the best features
+    #Select the best features | After Testing this was found to be the best amount of features for Random Forest
     select_kbest = SelectKBest(mutual_info_classif, k=26)
     #Fit the method onto the data and then return a transformed array
     X_new = select_kbest.fit_transform(X, y)
@@ -94,6 +94,9 @@ for rs in random_seeds:
     # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
     X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.2, random_state=rs, stratify=y)
 
+    # ------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+    #                                                    TRAINING ON THE TRAINING SET
+    # ------------------------------------------------------------------------------------------------------------------------------------------------------------------#
     # use sklearns random forest to fit a model to train data
     clf = RandomForestClassifier(n_estimators=100, random_state=rs, class_weight='balanced')
 
@@ -103,7 +106,7 @@ for rs in random_seeds:
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------#
                                             #TESTING ON THE TEST SET
 # ------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-#     # for this classification use Predict_proba to give the probability of the classes whereas predict() just predicts the output class for the test set
+     # for this classification use Predict_proba to give the probability of the classes whereas predict() just predicts the output class for the test set
     probs = clf.predict_proba(X_test)
 
     #store just the fraudulent class probabilities

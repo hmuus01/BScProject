@@ -1,19 +1,19 @@
+#This file contains the steps taken to train the model and test the performance of the model
+#using 20 different lBR values and analysing the performance
 #Import Statements
 # GC - Google Cloud
 import math
-
 import pandas as pd
 import numpy as np
-
-from sklearn import metrics
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
-from sklearn.feature_selection import SelectKBest, f_regression, mutual_info_classif, f_classif
 from sklearn import svm
-
 import matplotlib.pyplot as plt
+
+#The following library is where code for training was obtained and adapted from
+#https://scikit-learn.org/stable/modules/svm.html#classification
 
 #Array to store the mean accuracies and recalls
 k_accuracies=[]
@@ -64,25 +64,21 @@ for load_balancing_ratio in lb_range:
         # create array y, which includes the classification only
         y = result['Class']
 
-#################################################
-        # NOT NEEDED FOR THIS TEST
-        # # Select the best features
-        # select_kbest = SelectKBest(f_classif, k=5)
-        # # Fit the method onto the data and then return a transformed array
-        # X_new = select_kbest.fit_transform(X, y)
-        # # Store the features selected
-        # mask = select_kbest.get_support()
-##################################################
-
         # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=rs, stratify=y)
 
+        # ------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+        #                                                    TRAINING ON THE TRAINING SET
+        # ------------------------------------------------------------------------------------------------------------------------------------------------------------------#
         # use sklearns Support Vector Machines to fit a model to train data | cach_size 7000 makes sure to use all the processors
         clf = svm.SVC(C=1, kernel='linear', cache_size=7000, probability=True, random_state=rs, class_weight='balanced')
 
         # Train the model using the training data, meaning learn about the relationship between feature and output class
         clf.fit(X_train, y_train)
 
+        # ------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+        #                                                    TESTING ON THE TEST SET
+        # ------------------------------------------------------------------------------------------------------------------------------------------------------------------#
         # for this classification use Predict_proba to give the probability of the classes whereas predict() just predicts the output class for the test set
         probs = clf.predict_proba(X_test)
 
@@ -115,16 +111,6 @@ for load_balancing_ratio in lb_range:
         # Print the classification report
         print(classification_report(y_test, y_pred, target_names=target_names))
 
-        # Plot the points for the Roc curve and the auc score
-        fpr, tpr, threshold = metrics.roc_curve(y_test, fraudulent_class_probabilities)
-        roc_auc = metrics.auc(fpr, tpr)
-
-        # Store the probability of a fraud transaction and the predictions and actutal class into a dataframe
-        observations_df = pd.DataFrame(columns=['y_true', 'prediction', 'proba'])
-        observations_df['y_true'] = y_test
-        observations_df['prediction'] = y_pred
-        observations_df['proba'] = fraudulent_class_probabilities
-
     # Calculate the mean accuracy for each run with the different random seeds
     mean_accuracy = np.mean(np.array(accuracies))
 
@@ -141,21 +127,31 @@ for load_balancing_ratio in lb_range:
     k_recalls.append(mean_recall)
 
 
-
-#Print the results
+#Plot the accuracy scores of different LBR ratios
 plt.plot(lb_range, k_accuracies)
+#Label the y-axis
 plt.ylabel('Accuracies')
+#Label the x-axis
 plt.xlabel('Load-Balancing Ratio')
+#Title of the plot
 plt.title('SVM Load-Balancing Test on Accuracies')
+#Set the xticks
 plt.xticks(lb_range)
 #plt.savefig("svc_1.png", dpi=300, bbox_inches='tight')
+#Display the graph
 plt.show()
 
+#Plot the recall scores of different LBR ratios
 plt.plot(lb_range, k_recalls)
+#Label the y-axis
 plt.ylabel('Recalls')
-plt.title('SVM Load-Balancing Test on Recalls')
-plt.xticks(lb_range)
+#Label the x-axis
 plt.xlabel('Load-Balancing Ratio')
+#Title of the plot
+plt.title('SVM Load-Balancing Test on Recalls')
+#Set the xticks
+plt.xticks(lb_range)
 #plt.savefig("svm_2.png", dpi=300, bbox_inches='tight')
+#Display the graph
 plt.show()
 

@@ -87,32 +87,36 @@ for rs in random_seeds:
     select_kbest = SelectKBest(f_classif, k=24)
     #Fit the method onto the data and then return a transformed array
     X_new =select_kbest.fit_transform(X, y)
-    #Store the features selected
-    mask = select_kbest.get_support()
 
     # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
     X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.2, random_state=rs, stratify=y)
 
+    # ------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+    #                                                    TRAINING ON THE TRAINING SET
+    # ------------------------------------------------------------------------------------------------------------------------------------------------------------------#
     # use sklearns Logistic Regression to fit a model to train data
     clf = LogisticRegression(random_state=rs, solver='liblinear', class_weight='balanced')
 
     #Train the model using the training data, meaning learn about the relationship between feature and output class
     clf.fit(X_train, y_train)
 
-    # for this classification use Predict_proba to give the probability of the classes whereas predict() just predicts the output class for the test set
+    # ------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+    #                                                    TESTING ON THE TEST SET
+    # ------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+    #     # for this classification use Predict_proba to give the probability of the classes whereas predict() just predicts the output class for the test set
     probs = clf.predict_proba(X_test)
 
-    #store just the fraudulent class probabilities
+    # store just the fraudulent class probabilities
     fraudulent_class_probabilities = probs[:, 1]
 
-    #Classify whether a transaction is legit or fraud depending on if it above or below the threshold value
+    # Classify whether a transaction is legit or fraud depending on if it above or below the threshold value
     y_pred = [1 if x >= proba_threshold else 0 for x in fraudulent_class_probabilities]
 
     # use sklearn metrics to judge accuracy of model using test data
     acc = accuracy_score(y_test, y_pred)
     accuracies.append(acc)
 
-    #Print the accuracy score
+    # Print the output score
     print(acc)
 
     # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html
@@ -146,12 +150,6 @@ for rs in random_seeds:
     #Plot the points for the Roc curve and the auc score
     fpr, tpr, threshold = metrics.roc_curve(y_test, fraudulent_class_probabilities)
     roc_auc = metrics.auc(fpr, tpr)
-
-    #Store the probability of a fraud transaction and the predictions and actutal class into a dataframe
-    observations_df = pd.DataFrame(columns = ['y_true', 'prediction', 'proba'])
-    observations_df['y_true'] = y_test
-    observations_df['prediction'] = y_pred
-    observations_df['proba'] = fraudulent_class_probabilities
 
 #Display the Roc
 #plot_roc()

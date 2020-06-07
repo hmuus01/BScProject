@@ -45,7 +45,7 @@ random_seeds = [12,23,24]
 all_accuracys={'lbfgs':[], 'newton-cg':[], 'liblinear':[]}
 all_recalls = {'lbfgs':[], 'newton-cg':[], 'liblinear':[]}
 
-#List of optimizers used when testing with different features
+#List of Logistic Regression Optimizers used in this experiment
 optimizers=['lbfgs', 'newton-cg','liblinear']
 
 #store the list of selected by selectKbest method
@@ -63,7 +63,6 @@ for optimizer in optimizers:
         recalls = []
         # Train & Test the following using a different random seed value
         for rs in random_seeds:
-            print(rs)
             # choose a random sample of zeros
             credit_data_df_legit_random = credit_data_df_legit.sample(numberOfZeros, random_state=rs)
 
@@ -88,7 +87,6 @@ for optimizer in optimizers:
                 #if true add feature to array
                 if bool:
                     Selected_features.append(feature)
-
 
             # use sklearn to split the X and y, into X_train, X_test, y_train y_test with 80/20 split
             X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=0.2, random_state=rs, stratify=y)
@@ -125,7 +123,7 @@ for optimizer in optimizers:
 
             # Print the confusion matrix
             #print('Below is the confusion matrix')
-            #print(confusion_matrix(y_test, y_pred))
+            print(confusion_matrix(y_test, y_pred))
             tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
             print((tn, fp, fn, tp))
 

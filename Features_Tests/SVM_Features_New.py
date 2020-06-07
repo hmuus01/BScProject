@@ -121,7 +121,7 @@ for k in range(1, len(features) + 1):
 
         # Print the confusion matrix
         # print('Below is the confusion matrix')
-        # print(confusion_matrix(y_test, y_pred))
+        print(confusion_matrix(y_test, y_pred))
         tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
         print((tn, fp, fn, tp))
 

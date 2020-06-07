@@ -80,7 +80,7 @@ for load_balancing_ratio in lb_range:
         ml_object = [clf, mask]
 
         # use the model
-        #pickle.dump(ml_object, open(path.join('models', 'svm.pkl'), 'wb'))
+        #pickle.dump(model_and_features, open(path.join('models', 'svm.pkl'), 'wb'))
         #y_pred = clf.predict(X_test)
         probs = clf.predict_proba(X_test)
         preds = probs[:, 1]

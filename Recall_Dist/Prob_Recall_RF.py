@@ -8,7 +8,6 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 from scipy.stats import stats
-from sklearn import metrics
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
@@ -91,6 +90,8 @@ recalls = []
 precisions = []
 f1_scores = []
 
+#Train & Test the model using different random seeds
+#Do the steps below for each random seed
 for rs in random_seeds:
     # choose a random sample of zeros (Legit Class)
     credit_data_df_legit_random = credit_data_df_legit.sample(numberOfZeros, random_state=rs)
@@ -165,10 +166,6 @@ for rs in random_seeds:
 
     # Print the classification report
     print(classification_report(y_test, y_pred, target_names=target_names))
-
-    # Plot the points for the Roc curve and the auc score
-    fpr, tpr, threshold = metrics.roc_curve(y_test, fraudulent_class_probabilities)
-    roc_auc = metrics.auc(fpr, tpr)
 
 
 #calculate the mean accuracy

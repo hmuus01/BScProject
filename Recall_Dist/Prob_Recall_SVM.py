@@ -81,7 +81,6 @@ f1_scores = []
 #Train the model using different random seeds
 #Do the steps below for each random seed
 for rs in random_seeds:
-
     # choose a random sample of zeros (Legit Class)
     credit_data_df_legit_random = credit_data_df_legit.sample(numberOfZeros, random_state=rs)
 

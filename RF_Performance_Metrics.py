@@ -49,6 +49,9 @@ while len(random_seeds) < num_seeds:
     if num not in random_seeds:
         random_seeds.append(num)
 
+# A list of 8 random seeds Please Uncomment if you want to test with these values
+#random_seeds = [12, 23, 34, 1, 56, 67, 45, 6]
+
 # Method to plot the ROC curve
 def plot_roc():
     plt.title('RF - Receiver Operating Characteristic')
@@ -73,7 +76,6 @@ f1_scores = []
 #Train & Test the model using different random seeds
 #Do the steps below for each random seed
 for rs in random_seeds:
-    print(rs)
     # choose a random sample of zeros (Legit Class)
     credit_data_df_legit_random = credit_data_df_legit.sample(numberOfZeros, random_state=rs)
 

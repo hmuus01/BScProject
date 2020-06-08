@@ -47,6 +47,9 @@ while len(random_seeds) < num_seeds:
     if num not in random_seeds:
         random_seeds.append(num)
 
+# A list of 8 random seeds Please Uncomment if you want to test with these values
+#random_seeds = [12, 23, 34, 1, 56, 67, 45, 6]
+
 # Method to plot the ROC curve
 def plot_roc():
     plt.title('LR - Receiver Operating Characteristic')

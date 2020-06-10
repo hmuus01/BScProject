@@ -46,7 +46,7 @@ X = result[features]
 # create array y, which includes the classification only
 y = result['Class']
 
-#Select the best features | After Testing this was found to be the best amount of features for Logisitic Regressoon
+#Select the best features | After Testing this was found to be the best amount of features for Logisitic Regression
 select_kbest = SelectKBest(f_classif, k=24)
 #Fit the method onto the data and then return a transformed array
 X_new =select_kbest.fit_transform(X, y)
@@ -63,7 +63,7 @@ clf.fit(X_new,y)
 #Save the trained model together with the features selected
 model_and_features = [clf, features_saved]
 
-#save the model for future use | Uncomment the line below if you would like to save the model
-pickle.dump(model_and_features, open(path.join('models', 'lr4.pkl'), 'wb'))
+#save the model for future use
+pickle.dump(model_and_features, open(path.join('models', 'lr.pkl'), 'wb'))
 
 

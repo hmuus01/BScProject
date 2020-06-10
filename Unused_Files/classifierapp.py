@@ -1,3 +1,4 @@
+#Unused File
 import math
 import random
 from os import path
@@ -23,7 +24,7 @@ k_recalls=[]
 
 line_number=1
 
-#Lower the threshold from 0.5 to 0.2 in order to retrieve positive results that would otherwise be negative when the model lacks confidence i.e probabilty 0.45
+# probability threshold
 proba_threshold = 0.5
 
 # #Array to store the accuracies and the recalls
@@ -31,8 +32,8 @@ proba_threshold = 0.5
 # recalls = []
 
 #load the credit card csv file
-credit_data_df = pd.read_csv("data/creditcard.csv")
-test_data_df = pd.read_csv("data/credit.csv")
+credit_data_df = pd.read_csv("../data/dev_data.csv")
+test_data_df = pd.read_csv("../data/credit.csv")
 # create a dataframe of zeros   |
 credit_data_df_legit = credit_data_df[credit_data_df['Class'] == 0]
 
@@ -57,6 +58,7 @@ load_balancing_ratio = 1.0
 # **load-balancing**
 numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
 index = ['Ones', 'Zeros']
+
 random_seeds = [12, 23, 34, 1, 56, 67, 45, 6]
 
 
@@ -87,7 +89,7 @@ def plot_roc():
 
 features = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']
 # Array to store the accuracies and the recalls
-feature_headers = random.sample(features, len(features))
+#features = random.sample(features, len(features))
 accuracies = []
 recalls = []
 
@@ -101,12 +103,17 @@ recalls = []
 # mpl.ticker.EngFormatter(places=0))
 cr = credit_data_df.head(10)
 print(cr)
+
+# #time = credit_data_df_fraud['Amount'].values
+# #time = credit_data_df_legit.sample(numberOfOnes)['Amount'].values
 # time = credit_data_df['Time'].values
+#
 # fig, ax = plt.subplots()
-# sns.distplot(time, ax=ax, color='b')
+# sns.distplot(time, ax=ax, color='r', bins=24)
 # ax.set_title('Distribution of Transaction Time', fontsize=14)
 # ax.set_xlim([min(time), max(time)])
 #sns.pairplot(credit_data_df, palette ='coolwarm')
+
 #plt.savefig("AgeofDrivers.png", dpi=300, bbox_inches='tight')
 plt.show()
 
@@ -158,7 +165,7 @@ for rs in random_seeds:
     # print(clf.fit(X_train,y_train))
     ml_object = [clf, mask]
     #use the model
-    #pickle.dump(ml_object, open(path.join('models', 'rf.pkl'), 'wb'))
+    #pickle.dump(model_and_features, open(path.join('models', 'rf.pkl'), 'wb'))
     #y_pred = clf.predict(X_test)
 
     # for this classification use Predict_proba to give the probability of a 1(fraud)
@@ -192,10 +199,6 @@ for rs in random_seeds:
     tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
     print((tn, fp, fn, tp))
 
-    # plot the confusion matrix
-    # import scikitplot as skplt
-    #
-    # skplt.metrics.plot_confusion_matrix(y_test, y_pred)
 
     recall = tp / (tp + fn)
     recalls.append(recall)
@@ -208,18 +211,21 @@ for rs in random_seeds:
     observations_df['y_true'] = y_test
     observations_df['prediction'] = y_pred
     observations_df['proba'] = preds
+
+
+
 # print("random credit data " + str(credit_data_df_legit_random.shape[0]))
 # print("result " + str(result.shape[0]))
 # print(X_test.shape)
 # print(y_test.shape)
-plot_roc()
+#plot_roc()
 #Plot Confusion Matrix
-ax = plt.subplot()
-sns.heatmap(cm, ax=ax, annot=True, cmap=plt.cm.Reds)
-ax.set_title("Random Forest \n Confusion Matrix", fontsize=14)
-ax.set_xlabel("Predicted Label")
-ax.set_ylabel("True Label")
-plt.show()
+# ax = plt.subplot()
+# sns.heatmap(cm, ax=ax, annot=True, cmap=plt.cm.Reds)
+# ax.set_title("Random Forest \n Confusion Matrix", fontsize=14)
+# ax.set_xlabel("Predicted Label")
+# ax.set_ylabel("Actual Label")
+#plt.show()
 
 # print(observations_df.shape)
 # print(y_train.shape)
@@ -245,12 +251,12 @@ mean_recall = np.mean(np.array(recalls))
 print('accuracy mean = ' + str(mean_accuracy))
 print('recall mean = ' + str(mean_recall))
 
-cv_range = 10 #[1,2,3,4,5,6,7,8,9,10]
-cross_v = cross_val_score(clf, X_train, y_train, cv=cv_range,)
+# cv_range = 10 #[1,2,3,4,5,6,7,8,9,10]
+# cross_v = cross_val_score(clf, X_train, y_train, cv=cv_range,)
 
 #print('Cross validation is ' + str(cross_v))
 
-print('Cross_v mean is ' + str(cross_v.mean()))
+# print('Cross_v mean is ' + str(cross_v.mean()))
 #cm1 = pd.DataFrame(cross_v)
 # plt.plot(cross_v)
 # plt.ylabel('Cross Validation Score')

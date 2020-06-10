@@ -1,3 +1,4 @@
+#Unused File
 #SUPPORT VECTOR MACHINE
 import math
 import pickle
@@ -26,7 +27,7 @@ proba_threshold = 0.5
 
 accuracies= []
 recalls = []
-credit_data_df = pd.read_csv("data/dev_data.csv")
+credit_data_df = pd.read_csv("../data/dev_data.csv")
 
 # create a dataframe of zeros   | example rslt_df = dataframe[dataframe['Percentage'] > 80]
 credit_data_df_legit = credit_data_df[credit_data_df['Class'] == 0]
@@ -57,16 +58,7 @@ def plot_roc():
     plt.ylabel('True Positive Rate')
     plt.xlabel('False Positive Rate')
     plt.show()
-        # def plot_roc():
-        #     plt.title('Receiver Operating Characteristic')
-        #     plt.plot(fpr, tpr, 'b', label='AUC = %0.2f' % roc_auc)
-        #     plt.legend(loc='lower right')
-        #     plt.plot([0, 1], [0, 1], 'r--')
-        #     plt.xlim([0, 1])
-        #     plt.ylim([0, 1])
-        #     plt.ylabel('True Positive Rate')
-        #     plt.xlabel('False Positive Rate')
-        #     plt.show()
+
 
 feature_headers = ['Time', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6', 'V7', 'V8', 'V9', 'V10', 'V11', 'V12', 'V13', 'V14', 'V15', 'V16', 'V17', 'V18', 'V19', 'V20', 'V21', 'V22', 'V23', 'V24', 'V25', 'V26', 'V27', 'V28', 'Amount']
 for k in range(1, len(feature_headers)):
@@ -102,7 +94,7 @@ for k in range(1, len(feature_headers)):
         clf.fit(X_train, y_train)
         ml_object = [clf, mask]
         # use the model
-        #pickle.dump(ml_object, open(path.join('models', 'lr.pkl'), 'wb'))
+        #pickle.dump(model_and_features, open(path.join('models', 'svm.pkl'), 'wb'))
         #y_pred = clf.predict(X_test)
         probs = clf.predict_proba(X_test)
         preds = probs[:, 1]

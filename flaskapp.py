@@ -28,7 +28,7 @@ def home():
     #render the homepage
     return render_template('home.html')
 
-
+#Route when the user selects the transaction and model and submits
 @app.route('/option', methods=["GET", "POST"])
 def option():
     # 3 The user chooses transaction and model
@@ -85,7 +85,7 @@ def option():
     return redirect(url_for('drop', response=str(data[0]) + '_' + str(int(transaction_rows[user_response][-1])) + '_' + str(transaction_rows[user_response][-2]))
                     +'_' + str(data[1])+'_' + selectTransaction +'_' + selectModel)
 
-
+#Route redirected after the model and transaction No. was selected to display the result and populate the transactions and Models list (Ready for Selection)
 @app.route('/drop', methods=['GET', 'POST'])
 def drop():
     #use request.args to access the incoming data

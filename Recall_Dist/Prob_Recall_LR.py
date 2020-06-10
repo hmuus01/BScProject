@@ -14,6 +14,7 @@ from sklearn.feature_selection import SelectKBest, f_classif
 import matplotlib.pyplot as plt
 
 
+
 # Function to plot the distribution of the accuracy scores, this takes as parameters the name of the model|
 #the recall  values of  the LR model and the title of the plot
 def generate_density_plot(model_name, lr):

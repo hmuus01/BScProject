@@ -117,6 +117,7 @@ for rs in random_seeds:
     #Classify whether a transaction is legit or fraud depending on if it above or below the threshold value
     y_pred = [1 if x >= proba_threshold else 0 for x in fraudulent_class_probabilities]
 
+
     # use sklearn metrics to judge accuracy of model using test data
     acc = accuracy_score(y_test, y_pred)
     accuracies.append(acc)

@@ -1,3 +1,4 @@
+<!--This File contains the html code which displays the model prediction displayed to the user on the client side-->
 <html lang="en">
 
 <head>
@@ -10,33 +11,56 @@
 <body>
 <div class="text-center">
 <form action="/option" method="POST">
-    <h3>Click the drop-down menu below to choose a transaction</h3>
-  <select name="transaction">
+<!--    <h3>Please select a transaction, one of the three ML models from the drop-down menu and click submit</h3>-->
+     <h5>Choose a transaction</h5>
+    <section>
+  <select name="transaction" value="{{selected_idx}}">
     {% for idx in indexes %}
-   <option value= "{{idx}}">{{ transactions[idx] }}</option>"
+      {% if idx == selected_idx %}
+      <option value= "{{idx}}" selected>{{ transactions[idx]}}</option>"
+      {% else %}
+   <option value= "{{idx}}">{{ transactions[idx]}}</option>"
+      {% endif %}
     {% endfor %}
   </select>
+         <aside style="padding:5px" value="{{amount}}"> Transaction amount is {{amount}}</aside>
 
-    <h5>Click the drop-down menu below to choose a Model</h5>
-  <select name="model">
+<!--     <p value=> Transaction amount is {{amount}}</p>-->
+    </section>
+    <br>
+    <section>
+    <h5>Choose a Model</h5>
+  <select name="model" value="{{selected_model}}">
     {% for idx in model_indexes %}
+       {% if idx == selected_model %}
+   <option value= "{{idx}}" selected>{{ models[idx] }}</option>"
+      {% else %}
    <option value= "{{idx}}">{{ models[idx] }}</option>"
+      {% endif %}
     {% endfor %}
   </select>
-    {% if response =="0" %}
-    <p value="{{response}}"> Model Predicted: Legit </p>
-    {% else %}
-    <p value="{{response}}"> Model Predicted: Fraud </p>
-    {% endif %}
-     {% if true_val =="0" %}
-    <p value="{{true_val}}"> True value is: Legit</p>
-     {% else %}
-    <p value="{{true_val}}"> True value is: Fraud</p>
-    {% endif %}
-    <p value="{{price}}"> Amount is {{price}}</p>
+    </section>
+    <p style="padding:15px"><input type="submit" value="Submit"> </p>
 
-<!--    <p value="{{price}}"> Amount is {{price}}</p>-->
-  <input type="submit" value="Submit">
+{% for idx in model_indexes %}
+    {% if idx == selected_model %}
+    {% if response =="0" %}
+    <p style="color:green;" value="{{response}}{{idx}} selected">Value predicted by the <u>{{models[idx]}}</u> model: Legit </p>
+    {% else %}
+    <p style="color:red;" value="{{response}}{{idx}} selected">Value predicted by the {{models[idx]}} model: Fraud</p>
+    {% endif %}
+     {% endif %}
+    {% endfor %}
+     {% if true_val =="0" %}
+    <p style="color:green;" value="{{true_val}}"> True value is: Legit</p>
+     {% else %}
+    <p style="color:red;" value="{{true_val}}"> True value is: Fraud</p>
+    {% endif %}
+    <p value="{{prob}}"> Probability that transaction is fraud: {{prob}}%</p>
+
+
+<!--    <p value="{{amount}}"> Amount is {{amount}}</p>-->
+<!--  <input type="submit" value="Submit">-->
 </form>
 </div>
  <footer class="page-footer font small cyan darken-3">

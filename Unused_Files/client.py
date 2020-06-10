@@ -1,3 +1,4 @@
+#Unused File
 # #!/usr/bin/env python3
 # import os
 # import socket
@@ -72,7 +73,7 @@ PORT = 65432        # The port used by the server
 
 user_response = 5
 
-with open('data/credit.csv') as csv_file:
+with open('../data/credit.csv') as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')
     transaction_rows = [x for x in csv_reader]
 row_str = ' '.join(transaction_rows[user_response][:-1])

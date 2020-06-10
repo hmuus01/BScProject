@@ -1,18 +1,31 @@
+<!--This File contains the html code for the homepage displayed to the user on the client side-->
 <!DOCTYPE html>
-<html>
-  <body>
+<html xmlns="http://www.w3.org/1999/html">
+<head>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link charset="utf-8" href="/static/custom.css?q=1280549780" media="screen" rel="stylesheet"/>
+</head>
+  <body class="text-center">
 {% block content %}
-  <div class="Homeage">
-    <h1>Detecting Fraudulent Transaction</h1>
-    <p>This is the Homepage</p>
-      <p>Click below to go to the Model Selection and Fraud Prediction</p>
-      <strong><nav>
-      <ul class="link">
-            <li><a href="{{ url_for('drop', response='0_0_0') }}">Model Selection & Prediction</a></li>
-          </ul>
-        </nav></strong>
+  <div class="Homeage" class="text-center">
+    <h1>Detecting Fraudulent Transactions</h1>
+    <p>Homepage</p>
+      <h5 style="padding: 20px">Click the button below to go to the Model Selection and Fraud Prediction</h5>
+<!--      <strong><nav>-->
+<!--      <ul class="link">-->
+<!--            <li><a href="{{ url_for('drop', response='0_0_0_0') }}">Model Selection & Prediction</a></li>-->
+<!--    <button <a href="{{ url_for('drop', response='0_0_0_0') }}"> Model Selection & Prediction"> </a> </button>-->
+
+    <button style="border-radius: 25px; padding: 20px;" onclick="location.href='{{ url_for('drop', response='0_0_0_0_0_0') }}'" type="button">
+         Model Selection and Fraud Prediction</button>
+<!--          </ul>-->
+<!--        </nav></strong>-->
   </div>
 {% endblock %}
-
+<footer class="page-footer font small cyan darken-3">
+    <div class="footer-copyright text-center py-3">
+            © Credit Card Fraud Detection - Computing Project
+    </div>
+    </footer>
   </body>
 </html>

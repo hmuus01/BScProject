@@ -1,5 +1,5 @@
-#This file contains the steps taken to train the model and test the use of different optimizers
-# on different number of features on the performance of the model
+#This file contains the steps taken to train the model and test the use of
+# different number of features on the performance of the model
 #Import statements
 import math
 import pandas as pd

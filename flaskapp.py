@@ -1,4 +1,4 @@
-#This file serves as the client, it is made with flask and recieves data from the server which is displayed to the user
+#This file serves as the client, it is made with flask and receives data from the server which is displayed to the user
 #The server and the client communicate via sockets obtained and adapted the code for this from https://realpython.com/python-sockets/
 
 #Import Statements

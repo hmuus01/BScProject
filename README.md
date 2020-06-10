@@ -1,6 +1,6 @@
 **This computing project aims at building a fraud detection service able to robustly and automatically identify fraudulent online credit card transactions.**
 
-| **Main Files** |**Description** |**COMMENTED/NOT COMMENTED** |
+| **Main Files** |**Description** |**COMMENTED** |
 | --- | --- | --- |
 |`LR_Performance.py`| This file contains the steps taken to **train the model and test the performance** of the LR model | ✔ |
 |`RF_Performance.py`| This file contains the steps taken to **train the model and test the performance** of the RF model | ✔ |
@@ -11,7 +11,12 @@
 |`server.py`|This File contains the code for the server which uses the three models in this project to predict the class of a transaction | ✔ |
 |`flaskapp.py` | This file serves as the client, it is made with flask and receives data from the server which is displayed to the user. | ✔ |
 
-| **Folders In This Project** |**Description** |**COMMENTED/NOT COMMENTED** |
+| **Instructions on Running Client-Server Web Application** |
+| --- |
+|To test the client-server web application first run the file `server.py` and then run the file `flaskapp.py`|
+
+
+| **Folders In This Project** |**Description** |**COMMENTED** |
 | --- | --- | --- |
 |data| This Folder contains the datasets used in this project. **Please note the only two files used in this project are `dev_data` used in training and testing and `validation_data` used for the client/server web application**| ✔ |
 |LBR Tests |This folder contains the steps taken to train the model and test the performance of the model using `20 different lBR values` and analysing the performance| ✔ |

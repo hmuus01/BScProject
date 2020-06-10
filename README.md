@@ -2,14 +2,14 @@
 
 | **Main Files** |**Description** |**COMMENTED/NOT COMMENTED** |
 | --- | --- | --- |
-|`LR_Performance`| This file contains the steps taken to **train the model and test the performance** of the LR model | ✔ |
-|`RF_Performance`| This file contains the steps taken to **train the model and test the performance** of the RF model | ✔ |
-|`SVM_Performance`|This file contains the steps taken to **train the model and test the performance** of the SVM model | ✔ |
-|`LR_Save_Model`| This file contains the steps taken to save the LR model for future use after optimal parameters were found from testing.|  ✔ |
-|`RF_Save_Model`| This file contains the steps taken to save the RF model for future use after optimal parameters were found from testing.|  ✔ |
-|`SVM_Save_Model`| This file contains the steps taken to save the SVM model for future use after optimal parameters were found from testing.|  ✔ |
-|`server`|This File contains the code for the server which uses the three models in this project to predict the class of a transaction | ✔ |
-|`flaskapp` | This file serves as the client, it is made with flask and receives data from the server which is displayed to the user. | ✔ |
+|`LR_Performance.py`| This file contains the steps taken to **train the model and test the performance** of the LR model | ✔ |
+|`RF_Performance.py`| This file contains the steps taken to **train the model and test the performance** of the RF model | ✔ |
+|`SVM_Performance.py`|This file contains the steps taken to **train the model and test the performance** of the SVM model | ✔ |
+|`LR_Save_Model.py`| This file contains the steps taken to save the LR model for future use after optimal parameters were found from testing.|  ✔ |
+|`RF_Save_Model.py`| This file contains the steps taken to save the RF model for future use after optimal parameters were found from testing.|  ✔ |
+|`SVM_Save_Model.py`| This file contains the steps taken to save the SVM model for future use after optimal parameters were found from testing.|  ✔ |
+|`server.py`|This File contains the code for the server which uses the three models in this project to predict the class of a transaction | ✔ |
+|`flaskapp.py` | This file serves as the client, it is made with flask and receives data from the server which is displayed to the user. | ✔ |
 
 | **Folders In This Project** |**Description** |**COMMENTED/NOT COMMENTED** |
 | --- | --- | --- |

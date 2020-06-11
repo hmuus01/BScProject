@@ -82,7 +82,7 @@ for alg in algs:
             #                                                    TRAINING ON THE TRAINING SET
             # ------------------------------------------------------------------------------------------------------------------------------------------------------------------#
             # use sklearns Logistic Regression to fit a model to train data
-            clf = LogisticRegression(random_state=rs, solver='liblinear', class_weight='balanced', max_iter=1000)
+            clf = LogisticRegression(random_state=rs, solver='liblinear', class_weight='balanced')
 
             # Train the model using the training data, meaning learn about the relationship between feature and output class
             clf.fit(X_train, y_train)

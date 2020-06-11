@@ -61,7 +61,7 @@ load_balancing_ratio = 3.0
 #Set the number of zero's variable to be equal to the number of ones
 numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
 
-#A number(2000) of random seed's used for the random state parameter as way to counteract overfitting and get the mean
+#A number(2000) of random seed's used for the random state parameter as way to get the mean
 #of how the model performs from different data and different train-test splits
 lim=2000
 random_seeds=[]

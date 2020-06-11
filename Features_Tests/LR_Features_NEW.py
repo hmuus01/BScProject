@@ -36,10 +36,9 @@ load_balancing_ratio = 3.0
 #Set the number of zero's variable to be equal to the number of ones
 numberOfZeros = math.floor(load_balancing_ratio * numberOfOnes)
 
-#A list of random seed's used for the random state parameter as way to counteract overfitting and get the mean
+#A list of random seed's used for the random state parameter as way to get the mean
 #of how the model performs from different data and different train-test splits
-#random_seeds = [12, 23, 34, 1, 56, 67, 45, 6]
-random_seeds = [12,23,24]
+random_seeds = [12, 23, 34, 1, 56, 67, 45, 6]
 
 #Dictionary to store the mean accuracies of the optimizers
 all_accuracys={'lbfgs':[], 'newton-cg':[], 'liblinear':[]}

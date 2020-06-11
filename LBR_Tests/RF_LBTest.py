@@ -30,7 +30,7 @@ credit_data_df_legit = credit_data_df[credit_data_df['Class'] == 0]
 # create a dataframe of 1s only |
 credit_data_df_fraud = credit_data_df[credit_data_df['Class'] == 1]
 
-#A list of random seed's used for the random state parameter as way to counteract overfitting and get the mean
+#A list of random seed's used for the random state parameter as way to get the mean
 #of how the model performs from different data and different train-test splits
 random_seeds = [12, 23, 34, 1, 56, 67, 45, 6]
 

@@ -7,7 +7,7 @@ import numpy as np
 #client
 user_response = 5
 
-with open('../data/credit.csv') as csv_file:
+with open('../data/edited_unused_credit.csv') as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')
     transaction_rows = [x for x in csv_reader]
 row_str = ' '.join(transaction_rows[user_response][:-1])

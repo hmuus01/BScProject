@@ -33,7 +33,7 @@ proba_threshold = 0.5
 
 #load the credit card csv file
 credit_data_df = pd.read_csv("../data/dev_data.csv")
-test_data_df = pd.read_csv("../data/credit.csv")
+test_data_df = pd.read_csv("../data/edited_unused_credit.csv")
 # create a dataframe of zeros   |
 credit_data_df_legit = credit_data_df[credit_data_df['Class'] == 0]
 

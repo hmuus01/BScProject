@@ -10,7 +10,7 @@
 # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # s.connect((HOST, PORT))
 #
-# path = os.path.join('data', 'credit.csv')
+# path = os.path.join('data', 'edited_unused_credit.csv')
 # df = pd.read_csv(path)
 #
 # def send_row(data):
@@ -58,7 +58,7 @@
 #
 #
 #
-# #sendFile(os.path.join('data', 'credit.csv'))
+# #sendFile(os.path.join('data', 'edited_unused_credit.csv'))
 #
 # ##
 #
@@ -73,7 +73,7 @@ PORT = 65432        # The port used by the server
 
 user_response = 5
 
-with open('../data/credit.csv') as csv_file:
+with open('../data/edited_unused_credit.csv') as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')
     transaction_rows = [x for x in csv_reader]
 row_str = ' '.join(transaction_rows[user_response][:-1])

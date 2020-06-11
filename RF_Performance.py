@@ -169,5 +169,3 @@ print('accuracy mean = ' + str(mean_accuracy))
 print('recall mean = ' + str(mean_recall))
 print('precision mean = ' + str(np.mean(np.array(precisions))))
 print('F1 mean = ' + str(np.mean(np.array(f1_scores))))
-
-print('rf recall trimmed mean = ' + str(stats.trim_mean(np.array(recalls), 0.02)))
